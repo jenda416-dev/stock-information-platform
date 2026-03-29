@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Link from "next/link";
 import { NavAuth } from "@/components/NavAuth";
+import { NavMenu } from "@/components/NavMenu";
 import { ClerkProvider } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import "./globals.css";
@@ -33,22 +34,11 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <header className="border-b sticky top-0 z-10 bg-background/95 backdrop-blur">
-          <nav className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-6">
+          <nav className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-6 relative">
             <Link href="/" className="font-bold text-lg">
               📈 股市資訊
             </Link>
-            <Link
-              href="/kol"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              KOL 影片筆記
-            </Link>
-            <Link
-              href="/news"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              每日財經摘要
-            </Link>
+            <NavMenu />
             <div className="ml-auto flex items-center gap-3">
               <NavAuth isAdmin={isAdmin} />
             </div>
