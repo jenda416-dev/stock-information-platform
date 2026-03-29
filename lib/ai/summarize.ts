@@ -2,6 +2,7 @@ import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-
 import type { NewsArticle } from "@/lib/collectors/news";
 
 export interface BulletPoint {
+  title: string;
   point: string;
   sources: Array<{ title: string; url: string }>;
 }
@@ -14,6 +15,7 @@ const responseSchema: Schema = {
       items: {
         type: SchemaType.OBJECT,
         properties: {
+          title: { type: SchemaType.STRING },
           point: { type: SchemaType.STRING },
           sources: {
             type: SchemaType.ARRAY,
@@ -29,7 +31,7 @@ const responseSchema: Schema = {
             maxItems: 3,
           },
         },
-        required: ["point", "sources"],
+        required: ["title", "point", "sources"],
       },
       minItems: 10,
       maxItems: 10,
@@ -67,8 +69,8 @@ export async function summarizeNews(
 
 每個重點必須：
 1. 使用繁體中文
-2. 清晰、簡潔（1-2句話）
-3. 包含具體數字或事件名稱
+2. title：簡短標題（8-15字），概括該重點的核心事件
+3. point：詳細說明（1-2句話），清晰簡潔，包含具體數字或事件名稱
 4. 附上支持該重點的原文來源（1-3個）
 
 以下是今日的財經新聞列表：

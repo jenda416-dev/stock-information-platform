@@ -1,4 +1,5 @@
 export interface BulletPoint {
+  title: string;
   point: string;
   sources: Array<{ title: string; url: string }>;
 }

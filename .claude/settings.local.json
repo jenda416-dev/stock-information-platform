@@ -5,7 +5,15 @@
       "Bash(bun --version)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint)",
       "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint --use-npm)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint --use-npm --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --no-eslint --use-npm --yes)",
+      "Bash(npm install:*)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tsx --env-file=.env.local -e \":*)",
+      "Bash(npx tsx:*)",
+      "Bash(open http://localhost:3000)",
+      "Bash(source /Users/alexchen/Desktop/VScode/stock-dashboard/.env.local)",
+      "Bash(curl -s \"https://api.clerk.com/v1/users?email_address=jenda416@gmail.com\" -H \"Authorization: Bearer $CLERK_SECRET_KEY\")"
     ]
   }
 }
