@@ -6,7 +6,7 @@ import { fetchYoutubePosts } from "@/lib/collectors/youtube";
 import { summarizeVideoTranscript } from "@/lib/ai/summarizeVideo";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 function verifyCronSecret(req: NextRequest) {
   const auth = req.headers.get("authorization");

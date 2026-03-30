@@ -67,9 +67,18 @@ export async function GET(req: NextRequest) {
     })
     .onConflictDoNothing();
 
-  // Step 4: Generate AI summary
+  // Step 4: Generate AI summary (with one retry on failure)
+  async function generateWithRetry() {
+    try {
+      return await summarizeNews(articles, today);
+    } catch (firstErr) {
+      await new Promise((r) => setTimeout(r, 5000));
+      return await summarizeNews(articles, today);
+    }
+  }
+
   try {
-    const bullets = await summarizeNews(articles, today);
+    const bullets = await generateWithRetry();
 
     await db
       .update(newsDigests)
