@@ -38,23 +38,21 @@ export async function GET(req: NextRequest) {
   // Step 1: Fetch articles
   const articles = await fetchAllNews(today);
 
-  // Step 2: Insert articles into DB (ignore duplicates)
-  for (const article of articles) {
-    try {
-      await db
-        .insert(newsArticles)
-        .values({
+  // Step 2: Insert articles into DB (ignore duplicates) - bulk insert
+  if (articles.length > 0) {
+    await db
+      .insert(newsArticles)
+      .values(
+        articles.map((article) => ({
           sourceName: article.sourceName,
           title: article.title,
           description: article.description,
           url: article.url,
           publishedAt: article.publishedAt,
           fetchedDate: today,
-        })
-        .onConflictDoNothing();
-    } catch {
-      // skip
-    }
+        }))
+      )
+      .onConflictDoNothing();
   }
 
   // Step 3: Create pending digest row

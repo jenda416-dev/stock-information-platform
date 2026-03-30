@@ -33,7 +33,7 @@ const responseSchema: Schema = {
         },
         required: ["title", "point", "sources"],
       },
-      minItems: 10,
+      minItems: 5,
       maxItems: 10,
     },
   },
