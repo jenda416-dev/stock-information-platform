@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     .values({
       digestDate: today,
       bulletPoints: [],
-      modelUsed: "gemini-2.0-flash",
+      modelUsed: "gemini-2.0-flash-lite",
       articleCount: 0,
       status: "pending",
     })
