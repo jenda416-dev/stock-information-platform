@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { newsArticles, newsDigests } from "@/lib/db/schema";
+import { newsDigests } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { fetchAllNews } from "@/lib/collectors/news";
 import { summarizeNews } from "@/lib/ai/summarize";
@@ -14,8 +14,7 @@ function verifyCronSecret(req: NextRequest) {
 }
 
 function getTaiwanDateStr() {
-  return new Date()
-    .toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" }); // returns YYYY-MM-DD
+  return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
 }
 
 export async function GET(req: NextRequest) {
@@ -25,60 +24,38 @@ export async function GET(req: NextRequest) {
 
   const today = getTaiwanDateStr();
 
-  // Check if digest already complete for today
-  const existing = await db
+  const [existing] = await db
     .select()
     .from(newsDigests)
     .where(eq(newsDigests.digestDate, today));
 
-  if (existing[0]?.status === "complete") {
+  if (existing?.status === "complete") {
     return NextResponse.json({ ok: true, message: "Already complete for today" });
   }
 
-  // Step 1: Fetch articles
-  const articles = await fetchAllNews(today);
-
-  // Step 2: Insert articles into DB (ignore duplicates) - bulk insert
-  if (articles.length > 0) {
-    await db
-      .insert(newsArticles)
-      .values(
-        articles.map((article) => ({
-          sourceName: article.sourceName,
-          title: article.title,
-          description: article.description,
-          url: article.url,
-          publishedAt: article.publishedAt,
-          fetchedDate: today,
-        }))
-      )
-      .onConflictDoNothing();
-  }
-
-  // Step 3: Create pending digest row
+  // Create pending row
   await db
     .insert(newsDigests)
     .values({
       digestDate: today,
       bulletPoints: [],
-      modelUsed: "gemini-2.0-flash",
-      articleCount: articles.length,
+      modelUsed: "gemini-1.5-flash",
+      articleCount: 0,
       status: "pending",
     })
     .onConflictDoNothing();
 
-  // Step 4: Generate AI summary (with one retry on failure)
-  async function generateWithRetry() {
-    try {
-      return await summarizeNews(articles, today);
-    } catch (firstErr) {
-      await new Promise((r) => setTimeout(r, 5000));
-      return await summarizeNews(articles, today);
-    }
-  }
-
   try {
-    const bullets = await generateWithRetry();
+    const articles = await fetchAllNews();
+
+    let bullets;
+    try {
+      bullets = await summarizeNews(articles);
+    } catch {
+      // one retry
+      await new Promise((r) => setTimeout(r, 5000));
+      bullets = await summarizeNews(articles);
+    }
 
     await db
       .update(newsDigests)
@@ -97,7 +74,7 @@ export async function GET(req: NextRequest) {
       .set({ status: "failed" })
       .where(eq(newsDigests.digestDate, today));
 
-    console.error("Summarization failed:", err);
+    console.error("Digest failed:", err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
   }
 }

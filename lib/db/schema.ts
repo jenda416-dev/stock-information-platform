@@ -61,11 +61,43 @@ export const newsArticles = pgTable(
   (t) => [index("news_articles_fetched_date_idx").on(t.fetchedDate)]
 );
 
+export const watchedStocks = pgTable("watched_stocks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  stockCode: text("stock_code").notNull().unique(),
+  stockName: text("stock_name").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const earningsCalls = pgTable(
+  "earnings_calls",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    stockCode: text("stock_code").notNull(),
+    stockName: text("stock_name").notNull(),
+    callDate: date("call_date").notNull(),
+    callTime: text("call_time"),
+    location: text("location"),
+    officialUrl: text("official_url"),
+    pdfUrl: text("pdf_url"),
+    status: text("status").notNull().default("upcoming"), // "upcoming" | "completed"
+    summary: text("summary"),
+    updatedAt: timestamp("updated_at").defaultNow(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [
+    unique().on(t.stockCode, t.callDate),
+    index("earnings_calls_call_date_idx").on(t.callDate),
+    index("earnings_calls_status_idx").on(t.status),
+  ]
+);
+
 export const newsDigests = pgTable("news_digests", {
   id: uuid("id").primaryKey().defaultRandom(),
   digestDate: date("digest_date").unique().notNull(),
   bulletPoints: jsonb("bullet_points").notNull().$type<
     Array<{
+      title: string;
       point: string;
       sources: Array<{ title: string; url: string }>;
     }>
