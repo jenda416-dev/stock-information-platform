@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { kolPosts, kolPersons } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { GooayeVideoCard, type VideoSummary } from "@/components/home/GooayeVideoCard";
+import { MarketDashboard } from "@/components/market/MarketDashboard";
 
 export default async function HomePage() {
   const posts = await db
@@ -28,12 +29,17 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
+    <div className="max-w-5xl mx-auto py-10 px-4">
       {/* Hero */}
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold mb-2">股市資訊平台</h1>
         <p className="text-muted-foreground text-sm">追蹤市場重要人士動態，掌握每日財經重點</p>
       </div>
+
+      {/* 市場行情 */}
+      <section className="mb-10">
+        <MarketDashboard />
+      </section>
 
       {/* Gooaye YouTube 最新重點 */}
       <section>
