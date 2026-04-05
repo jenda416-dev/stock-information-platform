@@ -9,6 +9,8 @@ const SYMBOLS: Array<{ symbol: string; name: string; region: IndexData["region"]
   { symbol: "^GSPC",  name: "S&P 500",      region: "美股" },
   { symbol: "^SOX",   name: "費城半導體",   region: "美股" },
   { symbol: "^VIX",   name: "VIX 恐慌指數", region: "美股" },
+  { symbol: "BTC-USD", name: "比特幣 BTC",  region: "虛擬貨幣" },
+  { symbol: "ETH-USD", name: "以太幣 ETH",  region: "虛擬貨幣" },
 ];
 
 let cache: { data: MarketApiResponse; expiredAt: number } | null = null;

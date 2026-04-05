@@ -42,9 +42,13 @@ export function IndexCard({ index }: Props) {
         ) : (
           <>
             <p className="text-2xl font-bold tracking-tight">{priceFormatted}</p>
-            <p className={`text-sm font-medium mt-1 ${colorClass}`}>
-              {arrow} {sign}{index.change.toFixed(2)}&ensp;({sign}{index.changePercent.toFixed(2)}%)
-            </p>
+            {index.change === 0 && index.changePercent === 0 ? (
+              <p className="text-sm font-medium mt-1 text-muted-foreground">— 暫無漲跌資料</p>
+            ) : (
+              <p className={`text-sm font-medium mt-1 ${colorClass}`}>
+                {arrow} {sign}{index.change.toFixed(2)}&ensp;({sign}{index.changePercent.toFixed(2)}%)
+              </p>
+            )}
           </>
         )}
       </CardContent>

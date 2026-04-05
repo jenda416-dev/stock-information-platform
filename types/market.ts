@@ -1,4 +1,4 @@
-export type MarketRegion = "台股" | "美股" | "恐慌指數";
+export type MarketRegion = "台股" | "美股" | "恐慌指數" | "虛擬貨幣";
 
 export interface IndexData {
   symbol: string;

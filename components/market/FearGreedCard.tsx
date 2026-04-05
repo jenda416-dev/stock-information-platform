@@ -57,18 +57,18 @@ export function FearGreedCard({ data }: Props) {
         {/* 分數 */}
         <p className="text-2xl font-bold tracking-tight">{data.score}</p>
 
-        {/* 評級 */}
-        <p className={`text-sm font-semibold mt-0.5 ${rating.text}`}>
-          {rating.label}
-        </p>
-
-        {/* 與前一收盤比較 */}
-        <p className="text-xs text-muted-foreground mt-1">
-          前一收盤：{data.previousClose.toFixed(1)}&ensp;
-          <span className={diff >= 0 ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"}>
-            {sign}{diff.toFixed(1)}
-          </span>
-        </p>
+        {/* 評級 + 前一收盤同列 */}
+        <div className="flex items-baseline justify-between mt-0.5">
+          <p className={`text-sm font-semibold ${rating.text}`}>
+            {rating.label}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            前一收盤：{data.previousClose.toFixed(1)}&ensp;
+            <span className={diff >= 0 ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"}>
+              {sign}{diff.toFixed(1)}
+            </span>
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

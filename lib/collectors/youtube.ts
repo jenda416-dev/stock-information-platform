@@ -28,7 +28,7 @@ export async function fetchYoutubePosts(channelId: string): Promise<RssPost[]> {
 
   const posts: RssPost[] = [];
 
-  for (const entry of list.slice(0, 3)) {
+  for (const entry of list.slice(0, 5)) {
     const videoId = String((entry["yt:videoId"] as string) ?? "");
     if (!videoId) continue;
 

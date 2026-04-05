@@ -9,6 +9,7 @@ import type { IndexData, FearGreedData, MarketApiResponse } from "@/types/market
 const REGIONS: Array<{ label: string; region: IndexData["region"]; count: number }> = [
   { label: "台股", region: "台股", count: 2 },
   { label: "美股", region: "美股", count: 6 },
+  { label: "虛擬貨幣", region: "虛擬貨幣", count: 2 },
 ];
 
 export function MarketDashboard() {
