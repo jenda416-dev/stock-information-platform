@@ -8,14 +8,18 @@ export interface AdminPost {
   title: string | null;
   publishedAt: string;
   summary: string | null;
+  tags: string[] | null;
 }
+
+const MAX_TAGS = 5;
 
 export function AdminPostList({ posts }: { posts: AdminPost[] }) {
   const [openGuid, setOpenGuid] = useState<string | null>(null);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftSummary, setDraftSummary] = useState("");
-  const [saved, setSaved] = useState<Record<string, { title: string | null; summary: string | null }>>(
-    Object.fromEntries(posts.map((p) => [p.guid, { title: p.title, summary: p.summary }]))
+  const [draftTags, setDraftTags] = useState<string[]>([]);
+  const [saved, setSaved] = useState<Record<string, { title: string | null; summary: string | null; tags: string[] | null }>>(
+    Object.fromEntries(posts.map((p) => [p.guid, { title: p.title, summary: p.summary, tags: p.tags }]))
   );
   const [message, setMessage] = useState<{ guid: string; type: "ok" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -23,7 +27,9 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
   const current = openGuid ? saved[openGuid] : null;
   const hasUnsaved =
     openGuid !== null &&
-    (draftTitle !== (current?.title ?? "") || draftSummary !== (current?.summary ?? ""));
+    (draftTitle !== (current?.title ?? "") ||
+      draftSummary !== (current?.summary ?? "") ||
+      JSON.stringify(draftTags) !== JSON.stringify(current?.tags ?? []));
 
   useEffect(() => {
     if (!hasUnsaved) return;
@@ -39,6 +45,7 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
     setOpenGuid(guid);
     setDraftTitle(s?.title ?? "");
     setDraftSummary(s?.summary ?? "");
+    setDraftTags(s?.tags ?? []);
     setMessage(null);
   }
 
@@ -48,16 +55,37 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
     setMessage(null);
   }
 
+  function handleTagChange(index: number, value: string) {
+    setDraftTags((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }
+
+  function handleAddTag() {
+    if (draftTags.length >= MAX_TAGS) return;
+    setDraftTags((prev) => [...prev, ""]);
+  }
+
+  function handleRemoveTag(index: number) {
+    setDraftTags((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function handleSave() {
     if (!openGuid) return;
     startTransition(async () => {
-      const result = await saveSummary(openGuid, draftTitle, draftSummary);
+      const result = await saveSummary(openGuid, draftTitle, draftSummary, draftTags);
       if (result.error) {
         setMessage({ guid: openGuid, type: "error", text: result.error });
       } else {
         setSaved((prev) => ({
           ...prev,
-          [openGuid]: { title: draftTitle || (prev[openGuid]?.title ?? null), summary: draftSummary || null },
+          [openGuid]: {
+            title: draftTitle || (prev[openGuid]?.title ?? null),
+            summary: draftSummary || null,
+            tags: draftTags.filter(Boolean),
+          },
         }));
         setMessage({ guid: openGuid, type: "ok", text: "已儲存" });
         setOpenGuid(null);
@@ -111,6 +139,54 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
                     placeholder="輸入自訂標題..."
                     className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   />
+                </div>
+
+                {/* Tags input */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      標籤（最多 {MAX_TAGS} 個）
+                    </label>
+                    {draftTags.length < MAX_TAGS && (
+                      <button
+                        type="button"
+                        onClick={handleAddTag}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        + 新增標籤
+                      </button>
+                    )}
+                  </div>
+                  {draftTags.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={handleAddTag}
+                      className="text-xs text-muted-foreground hover:text-foreground border border-dashed rounded-md px-3 py-2 w-full text-center transition-colors"
+                    >
+                      點擊新增標籤
+                    </button>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {draftTags.map((tag, i) => (
+                        <div key={i} className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={tag}
+                            onChange={(e) => handleTagChange(i, e.target.value)}
+                            placeholder="輸入標籤..."
+                            className="rounded-full border bg-background px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring w-28"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(i)}
+                            className="text-muted-foreground hover:text-foreground text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Summary textarea */}

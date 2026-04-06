@@ -34,7 +34,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <header className="border-b sticky top-0 z-10 bg-background/95 backdrop-blur">
-          <nav className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-6 relative">
+          <nav className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-6 relative">
             <Link href="/" className="font-bold text-lg">
               📈 股市資訊
             </Link>

@@ -19,3 +19,17 @@
 ## UI 規則
 - 所有文字顯示用繁體中文
 - 支援 dark mode，樣式用 Tailwind CSS
+- UI 元件放在 `components/ui/`，使用 shadcn 已有的元件，不要自己重寫
+
+## 版面寬度規則
+- Nav 與首頁內容統一用 `max-w-5xl mx-auto px-4`
+- 次頁面（`/kol`、`/news`、`/earnings` 等）用 `max-w-2xl mx-auto px-4`
+- 新增頁面或修改 nav 時需確認寬度一致
+
+## Cron Jobs 規則
+- 所有 cron route 須驗證 `Authorization: Bearer <CRON_SECRET>`，未通過回傳 401
+- 排程設定在 `vercel.json`，新增 cron route 要同步更新該檔案
+
+## 資料注意事項
+- `kol_posts.platform` 實際值為 `"youtube"`（股癌 Gooaye），schema 中的 comment 尚未更新
+- `kol_persons.platform` 欄位的 comment 同樣過時，實際 slug 為 `youtube_gooaye`

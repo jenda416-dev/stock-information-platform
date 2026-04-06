@@ -1,4 +1,20 @@
 {
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit*)",
+            "command": "cd /Users/alexchen/Desktop/VScode/stock-dashboard && npx tsc --noEmit || echo '{\"continue\":false,\"stopReason\":\"TypeScript 型別檢查失敗，請修正後再 commit\"}'",
+            "timeout": 60,
+            "statusMessage": "TypeScript 型別檢查中..."
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npm --version)",
@@ -13,7 +29,9 @@
       "Bash(npx tsx:*)",
       "Bash(open http://localhost:3000)",
       "Bash(source /Users/alexchen/Desktop/VScode/stock-dashboard/.env.local)",
-      "Bash(curl -s \"https://api.clerk.com/v1/users?email_address=jenda416@gmail.com\" -H \"Authorization: Bearer $CLERK_SECRET_KEY\")"
+      "Bash(curl -s \"https://api.clerk.com/v1/users?email_address=jenda416@gmail.com\" -H \"Authorization: Bearer $CLERK_SECRET_KEY\")",
+      "Bash(npx vercel:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

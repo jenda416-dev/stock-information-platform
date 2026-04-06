@@ -5,14 +5,19 @@ import { kolPosts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function saveSummary(guid: string, title: string, summary: string) {
+export async function saveSummary(guid: string, title: string, summary: string, tags: string[]) {
   if (!guid) return { error: "缺少影片 ID" };
+
+  const trimmedSummary = summary.trim() || null;
+  const trimmedTitle = title.trim();
+  const trimmedTags = tags.map((t) => t.trim()).filter(Boolean);
 
   const result = await db
     .update(kolPosts)
     .set({
-      ...(title.trim() && { title: title.trim() }),
-      translatedContent: summary.trim() || null,
+      ...(trimmedTitle && { title: trimmedTitle }),
+      translatedContent: trimmedSummary,
+      tags: trimmedTags.length > 0 ? trimmedTags : null,
     })
     .where(eq(kolPosts.guid, guid))
     .returning({ id: kolPosts.id });
