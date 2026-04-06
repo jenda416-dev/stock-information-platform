@@ -12,6 +12,7 @@ export default async function HomePage() {
       title: kolPosts.title,
       sourceUrl: kolPosts.sourceUrl,
       translatedContent: kolPosts.translatedContent,
+      tags: kolPosts.tags,
       publishedAt: kolPosts.publishedAt,
     })
     .from(kolPosts)
@@ -25,6 +26,7 @@ export default async function HomePage() {
     title: p.title ?? "",
     publishedAt: p.publishedAt.toISOString(),
     summary: p.translatedContent,
+    tags: p.tags,
     sourceUrl: p.sourceUrl ?? `https://www.youtube.com/watch?v=${p.guid}`,
   }));
 

@@ -17,6 +17,7 @@ export default async function KolPage({ searchParams }: Props) {
       title: kolPosts.title,
       content: kolPosts.content,
       translatedContent: kolPosts.translatedContent,
+      tags: kolPosts.tags,
       sourceUrl: kolPosts.sourceUrl,
       platform: kolPosts.platform,
       publishedAt: kolPosts.publishedAt,

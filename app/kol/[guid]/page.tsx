@@ -16,6 +16,7 @@ export default async function VideoDetailPage({ params }: Props) {
       title: kolPosts.title,
       sourceUrl: kolPosts.sourceUrl,
       translatedContent: kolPosts.translatedContent,
+      tags: kolPosts.tags,
       publishedAt: kolPosts.publishedAt,
     })
     .from(kolPosts)
@@ -45,6 +46,22 @@ export default async function VideoDetailPage({ params }: Props) {
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">影片標題</p>
         <h1 className="text-xl font-bold leading-snug">{post.title}</h1>
       </div>
+
+      {/* Tags */}
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          {post.tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+              style={{ border: "1px solid #bfdbfe" }}
+            >
+              <span className="opacity-60">#</span>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Summary */}
       {post.translatedContent ? (

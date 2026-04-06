@@ -8,10 +8,13 @@ export interface VideoSummary {
   title: string;
   publishedAt: string;
   summary: string | null;
+  tags: string[] | null;
   sourceUrl: string;
 }
 
 const PREVIEW_LENGTH = 150;
+
+const TAG_CLASS = "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300";
 
 export function GooayeVideoCard({ video }: { video: VideoSummary }) {
   const displayText = video.summary
@@ -53,9 +56,25 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
             </div>
           </div>
         </CardHeader>
-        {displayText && (
-          <CardContent className="pt-0">
-            <p className="text-sm leading-relaxed text-foreground/80">{displayText}</p>
+        {(video.tags?.length || displayText) && (
+          <CardContent className="pt-0 space-y-2">
+            {video.tags && video.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {video.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${TAG_CLASS}`}
+                    style={{ border: "1px solid #bfdbfe" }}
+                  >
+                    <span className="opacity-60">#</span>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            {displayText && (
+              <p className="text-sm leading-relaxed text-foreground/80">{displayText}</p>
+            )}
           </CardContent>
         )}
       </Card>

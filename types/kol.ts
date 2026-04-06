@@ -4,6 +4,7 @@ export interface KolPost {
   title: string | null;
   content: string | null;
   translatedContent: string | null;
+  tags: string[] | null;
   sourceUrl: string | null;
   platform: string;
   publishedAt: string;

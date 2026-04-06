@@ -35,8 +35,11 @@ export async function GET(req: NextRequest) {
       for (const post of posts) {
         try {
           let translatedContent: string | null = null;
+          let tags: string[] | null = null;
           if (post.fullTranscript) {
-            translatedContent = await summarizeVideoTranscript(post.fullTranscript, post.title);
+            const result = await summarizeVideoTranscript(post.fullTranscript, post.title);
+            translatedContent = result?.summary ?? null;
+            tags = result?.tags ?? null;
           }
 
           await db
@@ -49,6 +52,7 @@ export async function GET(req: NextRequest) {
               sourceUrl: post.sourceUrl,
               platform: post.platform,
               translatedContent,
+              tags,
               publishedAt: post.publishedAt,
             })
             .onConflictDoNothing();
