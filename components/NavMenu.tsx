@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/kol", label: "KOL 影片筆記" },
+  { href: "/earnings", label: "法說會" },
 ];
 
 export function NavMenu() {
@@ -20,9 +21,9 @@ export function NavMenu() {
           <Link
             key={link.href}
             href={link.href}
-            className={`text-sm transition-colors ${
+            className={`text-sm transition-colors relative ${
               pathname === link.href
-                ? "text-foreground font-medium"
+                ? "text-primary font-medium after:absolute after:bottom-[-18px] after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >

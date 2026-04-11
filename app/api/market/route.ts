@@ -18,7 +18,7 @@ let cache: { data: MarketApiResponse; expiredAt: number } | null = null;
 async function fetchSymbol(
   entry: (typeof SYMBOLS)[0]
 ): Promise<IndexData> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(entry.symbol)}?interval=1d&range=1d`;
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(entry.symbol)}?interval=1d&range=7d`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
@@ -39,11 +39,51 @@ async function fetchSymbol(
     const change: number = meta.regularMarketChange ?? price - prevClose;
     const changePercent: number =
       meta.regularMarketChangePercent ?? (prevClose ? (change / prevClose) * 100 : 0);
+
+    // 計算本週漲跌幅（以本週第一個交易日收盤為基準）
+    const closes: (number | null)[] = json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
+    const timestamps: number[] = json?.chart?.result?.[0]?.timestamp ?? [];
+    let weekChange: number | undefined;
+    let weekChangePercent: number | undefined;
+    let weekStartDate: string | undefined;
+
+    // 計算本週一 00:00 UTC（無論今天是週幾都能正確推算）
+    const now = new Date();
+    const utcDay = now.getUTCDay(); // 0=Sun,1=Mon,...,6=Sat
+    const daysToMonday = utcDay === 0 ? 6 : utcDay - 1;
+    const thisMondayMs = Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysToMonday
+    );
+
+    // 本週第一個有效交易日（timestamp >= 本週一，且 close 非 null）
+    const thisWeekIdx = timestamps.findIndex(
+      (ts, i) => ts * 1000 >= thisMondayMs && closes[i] != null && !isNaN(closes[i] as number)
+    );
+
+    if (thisWeekIdx >= 0) {
+      const weekStart = closes[thisWeekIdx] as number;
+      weekChange = price - weekStart;
+      weekChangePercent = weekStart !== 0 ? (weekChange / weekStart) * 100 : 0;
+      weekStartDate = new Date(timestamps[thisWeekIdx] * 1000).toLocaleDateString("zh-TW", {
+        month: "numeric",
+        day: "numeric",
+        timeZone: "Asia/Taipei",
+      });
+    }
+
+    const sparkline = closes
+      .filter((c): c is number => c != null && !isNaN(c))
+      .slice(-7);
+
     return {
       ...entry,
       price,
       change,
       changePercent,
+      weekChange,
+      weekChangePercent,
+      weekStartDate,
+      sparkline,
       currency: meta.currency ?? "USD",
       updatedAt: meta.regularMarketTime ?? Math.floor(Date.now() / 1000),
     };

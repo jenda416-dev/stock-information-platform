@@ -48,8 +48,10 @@ export function MarketDashboard() {
       <div className="space-y-6">
         {REGIONS.map((r) => (
           <section key={r.region}>
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <h2 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+              <span className="h-px flex-1 bg-border/60" />
               {r.label}
+              <span className="h-px flex-1 bg-border/60" />
             </h2>
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: r.count }).map((_, i) => (
@@ -79,19 +81,37 @@ export function MarketDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">市場行情</h2>
+        <div className="flex items-center gap-2">
+          <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
+          <h2 className="text-base font-semibold">市場行情</h2>
+        </div>
         <div className="flex items-center gap-3">
           {fetchedAt && (
-            <span className="text-xs text-muted-foreground">
-              更新時間：{new Date(fetchedAt).toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })}
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              {new Date(fetchedAt).toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour: "2-digit", minute: "2-digit" })} 更新
             </span>
           )}
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="text-sm px-3 py-1.5 rounded-md border hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-primary/30 text-primary hover:bg-primary/10 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            {refreshing ? "更新中..." : "更新報價"}
+            {refreshing ? (
+              <>
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeOpacity="0.25" />
+                  <path d="M21 12a9 9 0 00-9-9" />
+                </svg>
+                更新中
+              </>
+            ) : (
+              <>
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 12a9 9 0 109-9M3 3v5h5" />
+                </svg>
+                更新報價
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -100,8 +120,10 @@ export function MarketDashboard() {
         const indices = data?.filter((d) => d.region === region) ?? [];
         return (
           <section key={region}>
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+              <span className="h-px flex-1 bg-border/60" />
               {label}
+              <span className="h-px flex-1 bg-border/60" />
             </h3>
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {indices.map((index) => (

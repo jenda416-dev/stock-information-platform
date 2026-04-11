@@ -7,6 +7,10 @@ export interface IndexData {
   price: number;
   change: number;
   changePercent: number;
+  weekChange?: number;
+  weekChangePercent?: number;
+  weekStartDate?: string;
+  sparkline?: number[];
   currency: string;
   updatedAt: number;
   error?: string;

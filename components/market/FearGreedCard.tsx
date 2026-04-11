@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { FearGreedData } from "@/types/market";
 
 interface Props {
@@ -16,14 +16,10 @@ const RATING_MAP: Record<string, { label: string; text: string }> = {
 export function FearGreedCard({ data }: Props) {
   if (data.error) {
     return (
-      <Card>
-        <CardHeader className="pb-1">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            CNN 恐懼貪婪指數
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">資料暫時無法取得</p>
+      <Card className="border-l-4 border-l-yellow-500/60 overflow-hidden">
+        <CardContent className="py-3 px-4">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">CNN 恐懼貪婪指數</span>
+          <p className="text-sm text-muted-foreground mt-1">資料暫時無法取得</p>
         </CardContent>
       </Card>
     );
@@ -35,39 +31,41 @@ export function FearGreedCard({ data }: Props) {
   const clampedScore = Math.min(100, Math.max(0, data.score));
 
   return (
-    <Card>
-      <CardHeader className="pb-1">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          CNN 恐懼貪婪指數
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* 5段顏色進度條 + 指針 */}
-        <div className="relative h-2 rounded-full overflow-visible mb-3"
-          style={{
-            background: "linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #ef4444 100%)",
-          }}
-        >
-          <div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-gray-700 dark:border-gray-200 shadow"
-            style={{ left: `${clampedScore}%` }}
-          />
-        </div>
+    <Card className="border-l-4 border-l-yellow-500/60 overflow-hidden transition-all duration-200 hover:shadow-md">
+      <div className="h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent" />
 
-        {/* 分數 */}
-        <p className="text-2xl font-bold tracking-tight">{data.score}</p>
-
-        {/* 評級 + 前一收盤同列 */}
-        <div className="flex items-baseline justify-between mt-0.5">
-          <p className={`text-sm font-semibold ${rating.text}`}>
-            {rating.label}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            前一收盤：{data.previousClose.toFixed(1)}&ensp;
-            <span className={diff >= 0 ? "text-red-500 dark:text-red-400" : "text-green-600 dark:text-green-400"}>
+      <CardContent className="py-3 px-4">
+        {/* 標題 + 昨收變化 */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            CNN 恐懼貪婪指數
+          </span>
+          <span className="text-[11px] text-muted-foreground tabular-nums">
+            昨收 {data.previousClose.toFixed(0)}&ensp;
+            <span className={diff >= 0 ? "text-red-500 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}>
               {sign}{diff.toFixed(1)}
             </span>
-          </p>
+          </span>
+        </div>
+
+        {/* 分數（主角）+ 評級 */}
+        <div className="flex items-baseline gap-2">
+          <span className={`text-xl font-bold tabular-nums leading-none ${rating.text}`}>
+            {data.score}
+          </span>
+          <span className={`text-sm font-semibold ${rating.text}`}>
+            {rating.label}
+          </span>
+        </div>
+
+        {/* Gauge bar */}
+        <div className="relative h-1.5 rounded-full overflow-visible mt-2"
+          style={{ background: "linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #ef4444 100%)" }}
+        >
+          <div
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-gray-600 dark:border-gray-300 shadow-md"
+            style={{ left: `${clampedScore}%` }}
+          />
         </div>
       </CardContent>
     </Card>
