@@ -3,7 +3,7 @@ import type { IndexData, FearGreedData, MarketApiResponse } from "@/types/market
 
 const SYMBOLS: Array<{ symbol: string; name: string; region: IndexData["region"] }> = [
   { symbol: "^TWII",  name: "加權指數",     region: "台股" },
-  { symbol: "^TWOII", name: "櫃買指數",     region: "台股" },
+  // ^TWOII 已改用 TPEx 官方 API（fetchTaiwanOTC），Yahoo Finance 資料不可靠
   { symbol: "^DJI",   name: "道瓊",         region: "美股" },
   { symbol: "^IXIC",  name: "納斯達克",     region: "美股" },
   { symbol: "^GSPC",  name: "S&P 500",      region: "美股" },
@@ -15,6 +15,28 @@ const SYMBOLS: Array<{ symbol: string; name: string; region: IndexData["region"]
 
 let cache: { data: MarketApiResponse; expiredAt: number } | null = null;
 
+async function fetchIntraday(symbol: string): Promise<number[]> {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=5m&range=1d`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      cache: "no-store",
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const closes: (number | null)[] =
+      json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
+    return closes.filter((c): c is number => c != null && !isNaN(c));
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function fetchSymbol(
   entry: (typeof SYMBOLS)[0]
 ): Promise<IndexData> {
@@ -22,26 +44,35 @@ async function fetchSymbol(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
   try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      cache: "no-store",
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/json",
-      },
-    });
+    const [res, intradayCloses] = await Promise.all([
+      fetch(url, {
+        signal: controller.signal,
+        cache: "no-store",
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          "Accept": "application/json",
+        },
+      }),
+      fetchIntraday(entry.symbol),
+    ]);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
     const meta = json?.chart?.result?.[0]?.meta;
     if (!meta) throw new Error("No meta in response");
     const price: number = meta.regularMarketPrice ?? 0;
-    const prevClose: number = meta.previousClose ?? meta.chartPreviousClose ?? price;
-    const change: number = meta.regularMarketChange ?? price - prevClose;
-    const changePercent: number =
-      meta.regularMarketChangePercent ?? (prevClose ? (change / prevClose) * 100 : 0);
+
+    // 計算本日漲跌：用 closes 陣列的倒數第二筆當 prevClose
+    // Yahoo Finance 的 meta.regularMarketChange 有時以 chart 起始點為基準，數值不可靠
+    const closes: (number | null)[] = json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
+    const validCloses = closes.filter((c): c is number => c != null && !isNaN(c));
+    const prevClose: number =
+      validCloses.length >= 2
+        ? validCloses[validCloses.length - 2]
+        : (meta.previousClose ?? meta.chartPreviousClose ?? price);
+    const change: number = price - prevClose;
+    const changePercent: number = prevClose ? (change / prevClose) * 100 : 0;
 
     // 計算本週漲跌幅（以本週第一個交易日收盤為基準）
-    const closes: (number | null)[] = json?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
     const timestamps: number[] = json?.chart?.result?.[0]?.timestamp ?? [];
     let weekChange: number | undefined;
     let weekChangePercent: number | undefined;
@@ -71,9 +102,8 @@ async function fetchSymbol(
       });
     }
 
-    const sparkline = closes
-      .filter((c): c is number => c != null && !isNaN(c))
-      .slice(-7);
+    const dailyCloses = closes.filter((c): c is number => c != null && !isNaN(c));
+    const sparkline = intradayCloses.length >= 5 ? intradayCloses : dailyCloses.slice(-7);
 
     return {
       ...entry,
@@ -97,6 +127,74 @@ async function fetchSymbol(
       updatedAt: Math.floor(Date.now() / 1000),
       error: err instanceof Error ? err.message : "未知錯誤",
     };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchTaiwanOTC(): Promise<IndexData> {
+  const url = "https://www.tpex.org.tw/web/stock/aftertrading/daily_trading_index/st41_result.php?l=zh-tw&o=json";
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  const fallback: IndexData = {
+    symbol: "^TWOII", name: "櫃買指數", region: "台股",
+    price: 0, change: 0, changePercent: 0, currency: "TWD",
+    updatedAt: Math.floor(Date.now() / 1000), error: "資料暫時無法取得",
+  };
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      cache: "no-store",
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    // rows: [日期(民國), 成交張數, 金額(仟元), 筆數, 櫃買指數, 漲/跌]
+    const rows: [string, string, string, string, number, number][] =
+      json?.tables?.[0]?.data ?? [];
+    if (rows.length === 0) throw new Error("No data");
+
+    const latest = rows[rows.length - 1];
+    const price = latest[4];
+    const change = latest[5];
+    const prevPrice = price - change;
+    const changePercent = prevPrice ? (change / prevPrice) * 100 : 0;
+    const sparkline = rows.map((r) => r[4]);
+
+    // 本週漲跌幅
+    const now = new Date();
+    const utcDay = now.getUTCDay();
+    const daysToMonday = utcDay === 0 ? 6 : utcDay - 1;
+    const thisMondayMs = Date.UTC(
+      now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysToMonday
+    );
+    const parseTPExDate = (d: string): number => {
+      const [roc, m, day] = d.split("/");
+      return Date.UTC(parseInt(roc) + 1911, parseInt(m) - 1, parseInt(day));
+    };
+    const thisWeekRows = rows.filter((r) => parseTPExDate(r[0]) >= thisMondayMs);
+    let weekChange: number | undefined;
+    let weekChangePercent: number | undefined;
+    let weekStartDate: string | undefined;
+    if (thisWeekRows.length > 0) {
+      const weekStartPrice = thisWeekRows[0][4];
+      weekChange = price - weekStartPrice;
+      weekChangePercent = weekStartPrice ? (weekChange / weekStartPrice) * 100 : 0;
+      const d = parseTPExDate(thisWeekRows[0][0]);
+      weekStartDate = new Date(d).toLocaleDateString("zh-TW", {
+        month: "numeric", day: "numeric", timeZone: "UTC",
+      });
+    }
+
+    return {
+      symbol: "^TWOII", name: "櫃買指數", region: "台股",
+      price, change, changePercent,
+      weekChange, weekChangePercent, weekStartDate,
+      sparkline, currency: "TWD",
+      updatedAt: Math.floor(Date.now() / 1000),
+    };
+  } catch (err) {
+    return { ...fallback, error: err instanceof Error ? err.message : "未知錯誤" };
   } finally {
     clearTimeout(timer);
   }
@@ -148,10 +246,14 @@ export async function GET() {
     return NextResponse.json(cache.data);
   }
 
-  const [data, fearGreed] = await Promise.all([
+  const [yahooData, taiwanOTC, fearGreed] = await Promise.all([
     Promise.all(SYMBOLS.map(fetchSymbol)),
+    fetchTaiwanOTC(),
     fetchFearGreed(),
   ]);
+
+  // 把櫃買指數插在加權指數（index 0）之後
+  const data: IndexData[] = [yahooData[0], taiwanOTC, ...yahooData.slice(1)];
 
   const response: MarketApiResponse = {
     data,

@@ -19,6 +19,7 @@ export default async function AdminPage() {
       publishedAt: kolPosts.publishedAt,
       summary: kolPosts.translatedContent,
       tags: kolPosts.tags,
+      sectionCards: kolPosts.sectionCards,
     })
     .from(kolPosts)
     .innerJoin(kolPersons, eq(kolPosts.personId, kolPersons.id))
@@ -32,6 +33,7 @@ export default async function AdminPage() {
     publishedAt: p.publishedAt.toISOString(),
     summary: p.summary,
     tags: p.tags,
+    sectionCards: p.sectionCards,
   }));
 
   const stocks = await db

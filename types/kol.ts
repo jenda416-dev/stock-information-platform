@@ -1,3 +1,11 @@
+export interface SectionCard {
+  title: string;
+  stocks: string[];
+  logic: string;
+  adviceKeyword: string;
+  advice: string;
+}
+
 export interface KolPost {
   id: string;
   guid: string;

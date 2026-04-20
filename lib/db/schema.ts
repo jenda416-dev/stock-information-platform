@@ -36,6 +36,7 @@ export const kolPosts = pgTable(
     platform: text("platform").notNull(), // "soundon" | "truth_social"
     translatedContent: text("translated_content"),
     tags: jsonb("tags").$type<string[]>(),
+    sectionCards: jsonb("section_cards").$type<import("@/types/kol").SectionCard[]>(),
     publishedAt: timestamp("published_at").notNull(),
     fetchedAt: timestamp("fetched_at").defaultNow(),
   },

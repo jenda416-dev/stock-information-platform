@@ -24,7 +24,7 @@ export function KolPostCard({ post }: Props) {
 
   return (
     <Link href={`/kol/${post.guid}`} className="block group cursor-pointer">
-      <Card className="overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0">
+      <Card className="overflow-hidden transition duration-200 group-hover:shadow-md border-t-0">
         <CardHeader className="pb-2 pt-3">
           <div className="flex items-start gap-3">
             <div className="relative flex-shrink-0">
