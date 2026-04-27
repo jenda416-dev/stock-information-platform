@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { newsDigests } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
+import type { NewsDigestDoc } from "@/lib/firebase/collections";
 import { fetchAllNews } from "@/lib/collectors/news";
 import { summarizeNews } from "@/lib/ai/summarize";
 
@@ -23,27 +23,27 @@ export async function GET(req: NextRequest) {
   }
 
   const today = getTaiwanDateStr();
+  const digestRef = adminDb.collection("newsDigests").doc(today);
+  const existing = await digestRef.get();
 
-  const [existing] = await db
-    .select()
-    .from(newsDigests)
-    .where(eq(newsDigests.digestDate, today));
-
-  if (existing?.status === "complete") {
-    return NextResponse.json({ ok: true, message: "Already complete for today" });
-  }
-
-  // Create pending row
-  await db
-    .insert(newsDigests)
-    .values({
+  if (existing.exists) {
+    const data = existing.data() as NewsDigestDoc;
+    if (data.status === "complete") {
+      return NextResponse.json({
+        ok: true,
+        message: "Already complete for today",
+      });
+    }
+  } else {
+    await digestRef.set({
       digestDate: today,
       bulletPoints: [],
       modelUsed: "gemini-2.0-flash-lite",
       articleCount: 0,
       status: "pending",
-    })
-    .onConflictDoNothing();
+      generatedAt: null,
+    });
+  }
 
   try {
     const articles = await fetchAllNews();
@@ -52,29 +52,28 @@ export async function GET(req: NextRequest) {
     try {
       bullets = await summarizeNews(articles);
     } catch {
-      // one retry
       await new Promise((r) => setTimeout(r, 5000));
       bullets = await summarizeNews(articles);
     }
 
-    await db
-      .update(newsDigests)
-      .set({
-        bulletPoints: bullets,
-        articleCount: articles.length,
-        status: "complete",
-        generatedAt: new Date(),
-      })
-      .where(eq(newsDigests.digestDate, today));
+    await digestRef.update({
+      bulletPoints: bullets,
+      articleCount: articles.length,
+      status: "complete",
+      generatedAt: FieldValue.serverTimestamp(),
+    });
 
-    return NextResponse.json({ ok: true, articles: articles.length, bullets: bullets.length });
+    return NextResponse.json({
+      ok: true,
+      articles: articles.length,
+      bullets: bullets.length,
+    });
   } catch (err) {
-    await db
-      .update(newsDigests)
-      .set({ status: "failed" })
-      .where(eq(newsDigests.digestDate, today));
-
+    await digestRef.update({ status: "failed" });
     console.error("Digest failed:", err);
-    return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, error: String(err) },
+      { status: 500 }
+    );
   }
 }

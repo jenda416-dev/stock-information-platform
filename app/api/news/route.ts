@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { newsDigests } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import type { NewsDigestDoc } from "@/lib/firebase/collections";
 
 function getTaiwanDateStr() {
   return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Taipei" });
@@ -11,18 +10,21 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const date = searchParams.get("date") ?? getTaiwanDateStr();
 
-  const [digest] = await db
-    .select()
-    .from(newsDigests)
-    .where(eq(newsDigests.digestDate, date));
+  const digestDoc = await adminDb.collection("newsDigests").doc(date).get();
+  const digest = digestDoc.exists
+    ? { id: digestDoc.id, ...(digestDoc.data() as NewsDigestDoc) }
+    : null;
 
-  // Also return list of available digest dates (last 7)
-  const history = await db
-    .select({ digestDate: newsDigests.digestDate })
-    .from(newsDigests)
-    .where(eq(newsDigests.status, "complete"))
-    .orderBy(desc(newsDigests.digestDate))
-    .limit(7);
+  const historySnapshot = await adminDb
+    .collection("newsDigests")
+    .where("status", "==", "complete")
+    .orderBy("digestDate", "desc")
+    .limit(7)
+    .get();
 
-  return NextResponse.json({ digest: digest ?? null, history });
+  const history = historySnapshot.docs.map((doc) => ({
+    digestDate: (doc.data() as NewsDigestDoc).digestDate,
+  }));
+
+  return NextResponse.json({ digest, history });
 }

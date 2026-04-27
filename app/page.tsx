@@ -1,34 +1,28 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
-import { kolPosts, kolPersons } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import type { KolPostDoc } from "@/lib/firebase/collections";
 import { GooayeVideoCard, type VideoSummary } from "@/components/home/GooayeVideoCard";
 import { MarketDashboard } from "@/components/market/MarketDashboard";
 
 export default async function HomePage() {
-  const posts = await db
-    .select({
-      guid: kolPosts.guid,
-      title: kolPosts.title,
-      sourceUrl: kolPosts.sourceUrl,
-      translatedContent: kolPosts.translatedContent,
-      tags: kolPosts.tags,
-      publishedAt: kolPosts.publishedAt,
-    })
-    .from(kolPosts)
-    .innerJoin(kolPersons, eq(kolPosts.personId, kolPersons.id))
-    .where(eq(kolPersons.platform, "youtube"))
-    .orderBy(desc(kolPosts.publishedAt))
-    .limit(3);
+  const snapshot = await adminDb
+    .collection("kolPosts")
+    .where("platform", "==", "youtube")
+    .orderBy("publishedAt", "desc")
+    .limit(3)
+    .get();
 
-  const videos: VideoSummary[] = posts.map((p) => ({
-    videoId: p.guid,
-    title: p.title ?? "",
-    publishedAt: p.publishedAt.toISOString(),
-    summary: p.translatedContent,
-    tags: p.tags,
-    sourceUrl: p.sourceUrl ?? `https://www.youtube.com/watch?v=${p.guid}`,
-  }));
+  const videos: VideoSummary[] = snapshot.docs.map((doc) => {
+    const p = doc.data() as KolPostDoc;
+    return {
+      videoId: p.guid,
+      title: p.title ?? "",
+      publishedAt: p.publishedAt.toDate().toISOString(),
+      summary: p.translatedContent,
+      tags: p.tags,
+      sourceUrl: p.sourceUrl ?? `https://www.youtube.com/watch?v=${p.guid}`,
+    };
+  });
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">

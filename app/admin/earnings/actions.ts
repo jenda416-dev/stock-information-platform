@@ -1,8 +1,8 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { watchedStocks, earningsCalls } from "@/lib/db/schema";
-import { eq, lt, and } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
+import type { EarningsCallDoc, WatchedStockDoc } from "@/lib/firebase/collections";
 import { revalidatePath } from "next/cache";
 import { fetchEarningsCallSchedule } from "@/lib/collectors/mops";
 import { currentUser } from "@clerk/nextjs/server";
@@ -19,13 +19,22 @@ function getTodayStr() {
 
 export async function addWatchedStock(stockCode: string, stockName: string) {
   await requireAdmin();
-  if (!stockCode.trim() || !stockName.trim()) return { error: "股票代號和名稱為必填" };
+  if (!stockCode.trim() || !stockName.trim())
+    return { error: "股票代號和名稱為必填" };
 
   try {
-    await db.insert(watchedStocks).values({
-      stockCode: stockCode.trim(),
-      stockName: stockName.trim(),
-    }).onConflictDoNothing();
+    const docRef = adminDb
+      .collection("watchedStocks")
+      .doc(stockCode.trim());
+    const existing = await docRef.get();
+    if (!existing.exists) {
+      await docRef.set({
+        stockCode: stockCode.trim(),
+        stockName: stockName.trim(),
+        isActive: true,
+        createdAt: FieldValue.serverTimestamp(),
+      });
+    }
     revalidatePath("/admin/earnings");
     return { ok: true };
   } catch {
@@ -35,7 +44,7 @@ export async function addWatchedStock(stockCode: string, stockName: string) {
 
 export async function deleteWatchedStock(id: string) {
   await requireAdmin();
-  await db.delete(watchedStocks).where(eq(watchedStocks.id, id));
+  await adminDb.collection("watchedStocks").doc(id).delete();
   revalidatePath("/admin/earnings");
   return { ok: true };
 }
@@ -43,43 +52,76 @@ export async function deleteWatchedStock(id: string) {
 export async function fetchEarningsFromMops() {
   await requireAdmin();
 
-  const stocks = await db
-    .select({ stockCode: watchedStocks.stockCode, stockName: watchedStocks.stockName })
-    .from(watchedStocks)
-    .where(eq(watchedStocks.isActive, true));
+  const snapshot = await adminDb
+    .collection("watchedStocks")
+    .where("isActive", "==", true)
+    .get();
 
-  if (stocks.length === 0) return { ok: true, inserted: 0, message: "沒有追蹤中的股票" };
+  const stocks = snapshot.docs.map((doc) => {
+    const data = doc.data() as WatchedStockDoc;
+    return { stockCode: data.stockCode, stockName: data.stockName };
+  });
+
+  if (stocks.length === 0)
+    return { ok: true, inserted: 0, message: "沒有追蹤中的股票" };
 
   const stockCodes = stocks.map((s) => s.stockCode);
   const events = await fetchEarningsCallSchedule(stockCodes);
 
   let inserted = 0;
   if (events.length > 0) {
-    const result = await db
-      .insert(earningsCalls)
-      .values(
-        events.map((e) => ({
+    const batch = adminDb.batch();
+    const existenceChecks = await Promise.all(
+      events.map((e) =>
+        adminDb
+          .collection("earningsCalls")
+          .doc(`${e.stockCode}_${e.callDate}`)
+          .get()
+      )
+    );
+
+    events.forEach((e, i) => {
+      if (!existenceChecks[i].exists) {
+        const docRef = adminDb
+          .collection("earningsCalls")
+          .doc(`${e.stockCode}_${e.callDate}`);
+        batch.set(docRef, {
           stockCode: e.stockCode,
           stockName: e.stockName,
           callDate: e.callDate,
-          callTime: e.callTime,
-          location: e.location,
-          officialUrl: e.officialUrl,
-          pdfUrl: e.pdfUrl,
-          status: "upcoming" as const,
-        }))
-      )
-      .onConflictDoNothing()
-      .returning({ id: earningsCalls.id });
-    inserted = result.length;
+          callTime: e.callTime ?? null,
+          location: e.location ?? null,
+          officialUrl: e.officialUrl ?? null,
+          pdfUrl: e.pdfUrl ?? null,
+          status: "upcoming",
+          summary: null,
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        inserted++;
+      }
+    });
+    await batch.commit();
   }
 
   // Mark past upcoming calls as completed
   const today = getTodayStr();
-  await db
-    .update(earningsCalls)
-    .set({ status: "completed", updatedAt: new Date() })
-    .where(and(lt(earningsCalls.callDate, today), eq(earningsCalls.status, "upcoming")));
+  const pastUpcoming = await adminDb
+    .collection("earningsCalls")
+    .where("status", "==", "upcoming")
+    .where("callDate", "<", today)
+    .get();
+
+  if (!pastUpcoming.empty) {
+    const updateBatch = adminDb.batch();
+    pastUpcoming.docs.forEach((doc) =>
+      updateBatch.update(doc.ref, {
+        status: "completed",
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+    );
+    await updateBatch.commit();
+  }
 
   revalidatePath("/admin/earnings");
   revalidatePath("/earnings");
@@ -90,17 +132,15 @@ export async function saveEarningsSummary(id: string, summary: string) {
   await requireAdmin();
   if (!id) return { error: "缺少法說會 ID" };
 
-  const result = await db
-    .update(earningsCalls)
-    .set({
-      summary: summary.trim() || null,
-      status: "completed",
-      updatedAt: new Date(),
-    })
-    .where(eq(earningsCalls.id, id))
-    .returning({ id: earningsCalls.id });
+  const docRef = adminDb.collection("earningsCalls").doc(id);
+  const existing = await docRef.get();
+  if (!existing.exists) return { error: "找不到該法說會記錄" };
 
-  if (result.length === 0) return { error: "找不到該法說會記錄" };
+  await docRef.update({
+    summary: summary.trim() || null,
+    status: "completed",
+    updatedAt: FieldValue.serverTimestamp(),
+  });
 
   revalidatePath("/admin/earnings");
   revalidatePath("/earnings");
@@ -121,18 +161,24 @@ export async function addEarningsCallManually(
   }
 
   try {
-    await db
-      .insert(earningsCalls)
-      .values({
+    const docId = `${stockCode.trim()}_${callDate}`;
+    const docRef = adminDb.collection("earningsCalls").doc(docId);
+    const existing = await docRef.get();
+    if (!existing.exists) {
+      await docRef.set({
         stockCode: stockCode.trim(),
         stockName: stockName.trim(),
         callDate,
         callTime: callTime.trim() || null,
         location: location.trim() || null,
         officialUrl: officialUrl.trim() || null,
+        pdfUrl: null,
         status: "upcoming",
-      })
-      .onConflictDoNothing();
+        summary: null,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
     revalidatePath("/admin/earnings");
     revalidatePath("/earnings");
     return { ok: true };

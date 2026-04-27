@@ -1,8 +1,8 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { kolPosts } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import { FieldValue } from "firebase-admin/firestore";
+import type { KolPostDoc } from "@/lib/firebase/collections";
 import { revalidatePath } from "next/cache";
 import type { SectionCard } from "@/types/kol";
 
@@ -20,20 +20,25 @@ export async function saveSummary(
   const trimmedTags = tags.map((t) => t.trim()).filter(Boolean);
   const validCards = sectionCards.filter((c) => c.title.trim());
 
-  const result = await db
-    .update(kolPosts)
-    .set({
-      ...(trimmedTitle && { title: trimmedTitle }),
-      translatedContent: trimmedSummary,
-      tags: trimmedTags.length > 0 ? trimmedTags : null,
-      sectionCards: validCards.length > 0 ? validCards : null,
-    })
-    .where(eq(kolPosts.guid, guid))
-    .returning({ id: kolPosts.id });
+  const snapshot = await adminDb
+    .collection("kolPosts")
+    .where("guid", "==", guid)
+    .limit(1)
+    .get();
 
-  if (result.length === 0) {
+  if (snapshot.empty) {
     return { error: `找不到影片 ID: ${guid}` };
   }
+
+  const doc = snapshot.docs[0];
+  const update: Partial<KolPostDoc> = {
+    translatedContent: trimmedSummary,
+    tags: trimmedTags.length > 0 ? trimmedTags : null,
+    sectionCards: validCards.length > 0 ? validCards : null,
+  };
+  if (trimmedTitle) update.title = trimmedTitle;
+
+  await doc.ref.update(update);
 
   revalidatePath("/");
   revalidatePath("/admin");

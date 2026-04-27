@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { kolPersons, kolPosts } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import type { KolPersonDoc, KolPostDoc } from "@/lib/firebase/collections";
 import { fetchYoutubePosts } from "@/lib/collectors/youtube";
 import { summarizeVideoTranscript } from "@/lib/ai/summarizeVideo";
 
@@ -18,17 +18,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const persons = await db
-    .select()
-    .from(kolPersons)
-    .where(eq(kolPersons.slug, "youtube_gooaye"));
+  const personDoc = await adminDb
+    .collection("kolPersons")
+    .doc("youtube_gooaye")
+    .get();
 
-  if (persons.length === 0) {
+  if (!personDoc.exists) {
     return NextResponse.json({ ok: false, error: "gooaye not found" });
   }
 
-  const person = persons[0];
-  const channelId = new URL(person.feedUrl).searchParams.get("channel_id") ?? "";
+  const person = personDoc.data() as KolPersonDoc;
+  const channelId =
+    new URL(person.feedUrl).searchParams.get("channel_id") ?? "";
   const posts = await fetchYoutubePosts(channelId);
 
   let totalInserted = 0;
@@ -37,15 +38,22 @@ export async function GET(req: NextRequest) {
       let translatedContent: string | null = null;
       let tags: string[] | null = null;
       if (post.fullTranscript) {
-        const result = await summarizeVideoTranscript(post.fullTranscript, post.title);
+        const result = await summarizeVideoTranscript(
+          post.fullTranscript,
+          post.title
+        );
         translatedContent = result?.summary ?? null;
         tags = result?.tags ?? null;
       }
 
-      await db
-        .insert(kolPosts)
-        .values({
-          personId: person.id,
+      const docId = `${person.slug}_${post.guid}`;
+      const docRef = adminDb.collection("kolPosts").doc(docId);
+      const existing = await docRef.get();
+      if (!existing.exists) {
+        const postData: Omit<KolPostDoc, "fetchedAt"> & {
+          fetchedAt: ReturnType<typeof FieldValue.serverTimestamp>;
+        } = {
+          personId: person.slug,
           guid: post.guid,
           title: post.title,
           content: post.content,
@@ -53,10 +61,16 @@ export async function GET(req: NextRequest) {
           platform: post.platform,
           translatedContent,
           tags,
-          publishedAt: post.publishedAt,
-        })
-        .onConflictDoNothing();
-      totalInserted++;
+          sectionCards: null,
+          publishedAt: Timestamp.fromDate(post.publishedAt),
+          fetchedAt: FieldValue.serverTimestamp(),
+          personSlug: person.slug,
+          personName: person.displayName,
+          personAvatar: person.avatarUrl,
+        };
+        await docRef.set(postData);
+        totalInserted++;
+      }
     } catch {
       // skip individual post errors
     }

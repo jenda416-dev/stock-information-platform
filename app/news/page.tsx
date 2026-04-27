@@ -1,6 +1,5 @@
-import { db } from "@/lib/db";
-import { newsDigests } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import type { NewsDigestDoc } from "@/lib/firebase/collections";
 import { NewsBulletPoint } from "@/components/news/NewsBulletPoint";
 import { DigestHistory } from "@/components/news/DigestHistory";
 import type { BulletPoint } from "@/types/news";
@@ -31,17 +30,21 @@ export default async function NewsPage({ searchParams }: Props) {
   const today = getTaiwanDateStr();
   const targetDate = date ?? today;
 
-  const [digest] = await db
-    .select()
-    .from(newsDigests)
-    .where(eq(newsDigests.digestDate, targetDate));
+  const digestDoc = await adminDb.collection("newsDigests").doc(targetDate).get();
+  const digest = digestDoc.exists
+    ? (digestDoc.data() as NewsDigestDoc)
+    : null;
 
-  const history = await db
-    .select({ digestDate: newsDigests.digestDate })
-    .from(newsDigests)
-    .where(eq(newsDigests.status, "complete"))
-    .orderBy(desc(newsDigests.digestDate))
-    .limit(7);
+  const historySnapshot = await adminDb
+    .collection("newsDigests")
+    .where("status", "==", "complete")
+    .orderBy("digestDate", "desc")
+    .limit(7)
+    .get();
+
+  const history = historySnapshot.docs.map((doc) => ({
+    digestDate: (doc.data() as NewsDigestDoc).digestDate,
+  }));
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
@@ -85,7 +88,7 @@ export default async function NewsPage({ searchParams }: Props) {
           <div className="text-xs text-muted-foreground mb-6">
             共分析 {digest.articleCount} 篇文章 · 由 {digest.modelUsed} 生成
             {digest.generatedAt && (
-              <> · {new Date(digest.generatedAt).toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })}</>
+              <> · {digest.generatedAt.toDate().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })}</>
             )}
           </div>
           <div className="space-y-6">

@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
-import { kolPosts, kolPersons } from "@/lib/db/schema";
-import { eq, and, gt, lt, asc, desc } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import type { KolPostDoc } from "@/lib/firebase/collections";
 import { notFound } from "next/navigation";
 import { SectionCardList } from "@/components/kol/SectionCardList";
 import { YoutubeEmbed } from "@/components/kol/YoutubeEmbed";
@@ -14,41 +13,39 @@ interface Props {
 export default async function VideoDetailPage({ params }: Props) {
   const { guid } = await params;
 
-  const [post] = await db
-    .select({
-      guid: kolPosts.guid,
-      title: kolPosts.title,
-      sourceUrl: kolPosts.sourceUrl,
-      translatedContent: kolPosts.translatedContent,
-      tags: kolPosts.tags,
-      sectionCards: kolPosts.sectionCards,
-      publishedAt: kolPosts.publishedAt,
-      personId: kolPosts.personId,
-    })
-    .from(kolPosts)
-    .innerJoin(kolPersons, eq(kolPosts.personId, kolPersons.id))
-    .where(and(eq(kolPosts.guid, guid), eq(kolPersons.platform, "youtube")))
-    .limit(1);
+  const snapshot = await adminDb
+    .collection("kolPosts")
+    .where("guid", "==", guid)
+    .where("platform", "==", "youtube")
+    .limit(1)
+    .get();
 
-  if (!post) notFound();
+  if (snapshot.empty) notFound();
 
-  const [prevPost, nextPost] = await Promise.all([
-    db.select({ guid: kolPosts.guid, title: kolPosts.title })
-      .from(kolPosts)
-      .where(and(eq(kolPosts.personId, post.personId), lt(kolPosts.publishedAt, post.publishedAt)))
-      .orderBy(desc(kolPosts.publishedAt))
-      .limit(1)
-      .then((r) => r[0] ?? null),
-    db.select({ guid: kolPosts.guid, title: kolPosts.title })
-      .from(kolPosts)
-      .where(and(eq(kolPosts.personId, post.personId), gt(kolPosts.publishedAt, post.publishedAt)))
-      .orderBy(asc(kolPosts.publishedAt))
-      .limit(1)
-      .then((r) => r[0] ?? null),
-  ]);
+  const doc = snapshot.docs[0];
+  const post = doc.data() as KolPostDoc;
+  const publishedAt = post.publishedAt;
 
-  const youtubeUrl = post.sourceUrl ?? `https://www.youtube.com/watch?v=${post.guid}`;
-  const publishedDate = post.publishedAt.toLocaleDateString("zh-TW", {
+  const allPostsSnap = await adminDb
+    .collection("kolPosts")
+    .where("personId", "==", post.personId)
+    .orderBy("publishedAt", "asc")
+    .get();
+
+  const allPosts = allPostsSnap.docs.map((d) => d.data() as KolPostDoc);
+  const idx = allPosts.findIndex((p) => p.guid === post.guid);
+  const prevPost =
+    idx > 0
+      ? { guid: allPosts[idx - 1].guid, title: allPosts[idx - 1].title }
+      : null;
+  const nextPost =
+    idx < allPosts.length - 1
+      ? { guid: allPosts[idx + 1].guid, title: allPosts[idx + 1].title }
+      : null;
+
+  const youtubeUrl =
+    post.sourceUrl ?? `https://www.youtube.com/watch?v=${post.guid}`;
+  const publishedDate = publishedAt.toDate().toLocaleDateString("zh-TW", {
     year: "numeric",
     month: "long",
     day: "numeric",

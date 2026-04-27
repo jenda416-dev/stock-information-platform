@@ -1,35 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { kolPosts, kolPersons } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import { Timestamp } from "firebase-admin/firestore";
+import type { KolPostDoc } from "@/lib/firebase/collections";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const cursor = searchParams.get("cursor"); // ISO timestamp of last post
   const limit = 20;
-  const offset = (page - 1) * limit;
   const slug = searchParams.get("slug");
 
-  const base = db
-    .select({
-      id: kolPosts.id,
-      guid: kolPosts.guid,
-      title: kolPosts.title,
-      content: kolPosts.content,
-      translatedContent: kolPosts.translatedContent,
-      sourceUrl: kolPosts.sourceUrl,
-      platform: kolPosts.platform,
-      publishedAt: kolPosts.publishedAt,
-      personSlug: kolPersons.slug,
-      personName: kolPersons.displayName,
-      personAvatar: kolPersons.avatarUrl,
-    })
-    .from(kolPosts)
-    .innerJoin(kolPersons, eq(kolPosts.personId, kolPersons.id));
+  let query = adminDb
+    .collection("kolPosts")
+    .orderBy("publishedAt", "desc")
+    .limit(limit) as FirebaseFirestore.Query;
 
-  const posts = await (slug ? base.where(eq(kolPersons.slug, slug)) : base)
-    .orderBy(desc(kolPosts.publishedAt))
-    .limit(limit)
-    .offset(offset);
-  return NextResponse.json({ posts, page, nextPage: posts.length === limit ? page + 1 : null });
+  if (slug) {
+    query = query.where("personSlug", "==", slug);
+  }
+
+  if (cursor) {
+    query = query.startAfter(Timestamp.fromDate(new Date(cursor)));
+  }
+
+  const snapshot = await query.get();
+  const posts = snapshot.docs.map((doc) => {
+    const data = doc.data() as KolPostDoc;
+    return {
+      id: doc.id,
+      guid: data.guid,
+      title: data.title,
+      content: data.content,
+      translatedContent: data.translatedContent,
+      sourceUrl: data.sourceUrl,
+      platform: data.platform,
+      publishedAt: data.publishedAt.toDate().toISOString(),
+      personSlug: data.personSlug,
+      personName: data.personName,
+      personAvatar: data.personAvatar,
+    };
+  });
+
+  const nextCursor =
+    posts.length === limit ? posts[posts.length - 1].publishedAt : null;
+  return NextResponse.json({ posts, cursor: nextCursor });
 }

@@ -1,6 +1,5 @@
-import { db } from "@/lib/db";
-import { earningsCalls } from "@/lib/db/schema";
-import { eq, gte, lt, desc, asc, and, isNotNull } from "drizzle-orm";
+import { adminDb } from "@/lib/firebase/admin";
+import type { EarningsCallDoc } from "@/lib/firebase/collections";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function getTodayStr() {
@@ -9,30 +8,51 @@ function getTodayStr() {
 
 function formatCallDate(dateStr: string) {
   const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("zh-TW", { year: "numeric", month: "long", day: "numeric", weekday: "short" });
+  return date.toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  });
 }
 
 function daysUntil(dateStr: string): number {
   const today = new Date(getTodayStr());
   const target = new Date(dateStr);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
 }
 
 export default async function EarningsPage() {
   const today = getTodayStr();
 
-  const upcoming = await db
-    .select()
-    .from(earningsCalls)
-    .where(and(eq(earningsCalls.status, "upcoming"), gte(earningsCalls.callDate, today)))
-    .orderBy(asc(earningsCalls.callDate));
+  const [upcomingSnap, completedSnap] = await Promise.all([
+    adminDb
+      .collection("earningsCalls")
+      .where("status", "==", "upcoming")
+      .where("callDate", ">=", today)
+      .orderBy("callDate", "asc")
+      .get(),
+    adminDb
+      .collection("earningsCalls")
+      .where("status", "==", "completed")
+      .orderBy("callDate", "desc")
+      .limit(20)
+      .get(),
+  ]);
 
-  const completed = await db
-    .select()
-    .from(earningsCalls)
-    .where(and(eq(earningsCalls.status, "completed"), isNotNull(earningsCalls.summary)))
-    .orderBy(desc(earningsCalls.callDate))
-    .limit(20);
+  const upcoming = upcomingSnap.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as EarningsCallDoc),
+  }));
+
+  const completed = completedSnap.docs
+    .filter((doc) => (doc.data() as EarningsCallDoc).summary != null)
+    .map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as EarningsCallDoc),
+    }));
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">

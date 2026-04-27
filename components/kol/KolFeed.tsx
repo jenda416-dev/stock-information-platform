@@ -6,46 +6,50 @@ import type { KolPost } from "@/types/kol";
 
 interface Props {
   initialPosts: KolPost[];
-  initialNextPage: number | null;
+  initialCursor: string | null; // ISO timestamp of last post, null if no more
   slug?: string;
 }
 
-export function KolFeed({ initialPosts, initialNextPage, slug }: Props) {
+export function KolFeed({ initialPosts, initialCursor, slug }: Props) {
   const [posts, setPosts] = useState<KolPost[]>(initialPosts);
-  const [nextPage, setNextPage] = useState<number | null>(initialNextPage);
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [loading, setLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
 
   const loadMore = useCallback(async () => {
-    if (!nextPage || loading) return;
+    if (!cursor || loading) return;
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(nextPage) });
+      const params = new URLSearchParams();
+      params.set("cursor", cursor);
       if (slug) params.set("slug", slug);
       const res = await fetch(`/api/kol?${params}`);
       const data = await res.json();
       setPosts((prev) => [...prev, ...data.posts]);
-      setNextPage(data.nextPage);
+      setCursor(data.cursor ?? null);
     } finally {
       setLoading(false);
     }
-  }, [nextPage, loading, slug]);
+  }, [cursor, loading, slug]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => { if (entries[0].isIntersecting) loadMore(); },
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
       { threshold: 0.1 }
     );
     const el = loaderRef.current;
     if (el) observer.observe(el);
-    return () => { if (el) observer.unobserve(el); };
+    return () => {
+      if (el) observer.unobserve(el);
+    };
   }, [loadMore]);
 
-  // Reset when slug changes
   useEffect(() => {
     setPosts(initialPosts);
-    setNextPage(initialNextPage);
-  }, [slug, initialPosts, initialNextPage]);
+    setCursor(initialCursor);
+  }, [slug, initialPosts, initialCursor]);
 
   if (posts.length === 0) {
     return (

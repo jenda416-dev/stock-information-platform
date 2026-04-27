@@ -7,7 +7,7 @@
 - 管理員：jenda416@gmail.com
 
 ## 技術規則
-- 資料庫用 Drizzle ORM，不要用 raw SQL
+- 資料庫用 Firebase Admin SDK（Firestore），import 從 `@/lib/firebase/admin`，型別定義在 `@/lib/firebase/collections`，不要用 raw Firestore REST API
 - 身份驗證用 Clerk，不要用其他套件
 - Server component 用 `currentUser()` 取得用戶資料，不要在 middleware 做 email 判斷
 - `ADMIN_EMAIL` 存在環境變數，不要寫死在代碼裡
