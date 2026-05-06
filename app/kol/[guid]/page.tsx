@@ -131,6 +131,25 @@ export default async function VideoDetailPage({ params }: Props) {
             <p className="text-sm text-muted-foreground">尚未上傳文字重點，請前往管理頁面新增。</p>
           )}
 
+          {post.audioUrl && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
+                <h2 className="text-base font-semibold">語音摘要</h2>
+              </div>
+              <div className="rounded-lg bg-muted/40 border border-border/50 p-3 sm:p-4">
+                <audio
+                  controls
+                  src={post.audioUrl}
+                  className="w-full h-10"
+                  preload="none"
+                >
+                  您的瀏覽器不支援音訊播放。
+                </audio>
+              </div>
+            </div>
+          )}
+
           {/* 上一篇 / 下一篇 */}
           {(prevPost || nextPost) && (
             <nav className="mt-8 pt-6 border-t grid grid-cols-2 gap-3">
