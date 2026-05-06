@@ -38,6 +38,11 @@ export async function GET(req: NextRequest) {
   let totalInserted = 0;
   for (const post of posts) {
     try {
+      const docId = `${person.slug}_${post.guid}`;
+      const docRef = adminDb.collection("kolPosts").doc(docId);
+      const existing = await docRef.get();
+      if (existing.exists) continue;
+
       let translatedContent: string | null = null;
       let tags: string[] | null = null;
       let sectionCards: SectionCard[] | null = null;
@@ -60,32 +65,27 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      const docId = `${person.slug}_${post.guid}`;
-      const docRef = adminDb.collection("kolPosts").doc(docId);
-      const existing = await docRef.get();
-      if (!existing.exists) {
-        const postData: Omit<KolPostDoc, "fetchedAt"> & {
-          fetchedAt: ReturnType<typeof FieldValue.serverTimestamp>;
-        } = {
-          personId: person.slug,
-          guid: post.guid,
-          title: post.title,
-          content: post.content,
-          sourceUrl: post.sourceUrl,
-          platform: post.platform,
-          translatedContent,
-          tags,
-          sectionCards,
-          audioUrl,
-          publishedAt: Timestamp.fromDate(post.publishedAt),
-          fetchedAt: FieldValue.serverTimestamp(),
-          personSlug: person.slug,
-          personName: person.displayName,
-          personAvatar: person.avatarUrl,
-        };
-        await docRef.set(postData);
-        totalInserted++;
-      }
+      const postData: Omit<KolPostDoc, "fetchedAt"> & {
+        fetchedAt: ReturnType<typeof FieldValue.serverTimestamp>;
+      } = {
+        personId: person.slug,
+        guid: post.guid,
+        title: post.title,
+        content: post.content,
+        sourceUrl: post.sourceUrl,
+        platform: post.platform,
+        translatedContent,
+        tags,
+        sectionCards,
+        audioUrl,
+        publishedAt: Timestamp.fromDate(post.publishedAt),
+        fetchedAt: FieldValue.serverTimestamp(),
+        personSlug: person.slug,
+        personName: person.displayName,
+        personAvatar: person.avatarUrl,
+      };
+      await docRef.set(postData);
+      totalInserted++;
     } catch {
       // skip individual post errors
     }
