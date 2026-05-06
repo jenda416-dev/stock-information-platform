@@ -13,6 +13,7 @@ export interface KolPost {
   content: string | null;
   translatedContent: string | null;
   tags: string[] | null;
+  audioUrl?: string | null;
   sourceUrl: string | null;
   platform: string;
   publishedAt: string;

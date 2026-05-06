@@ -22,6 +22,7 @@ export interface KolPostDoc {
   translatedContent: string | null;
   tags: string[] | null;
   sectionCards: SectionCard[] | null;
+  audioUrl?: string | null;
   publishedAt: Timestamp;
   fetchedAt: Timestamp;
   personSlug: string;
