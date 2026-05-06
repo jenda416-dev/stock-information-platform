@@ -1,16 +1,13 @@
-import { adminStorage } from "./admin";
+import { put } from "@vercel/blob";
 
 export async function uploadAudioToStorage(
   buffer: Buffer,
   guid: string
 ): Promise<string> {
-  const file = adminStorage.file(`kol-audio/${guid}.mp3`);
-
-  await file.save(buffer, {
-    metadata: { contentType: "audio/mpeg" },
+  const { url } = await put(`kol-audio/${guid}.mp3`, buffer, {
+    access: "public",
+    contentType: "audio/mpeg",
   });
 
-  await file.makePublic();
-
-  return file.publicUrl();
+  return url;
 }
