@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { KolPersonDoc, KolPostDoc } from "@/lib/firebase/collections";
+import type { SectionCard } from "@/types/kol";
 import { fetchYoutubePosts } from "@/lib/collectors/youtube";
-import { summarizeVideoTranscript } from "@/lib/ai/summarizeVideo";
+import { summarizeVideoTranscript, generateSectionCards } from "@/lib/ai/summarizeVideo";
+import { generateAudioFromText } from "@/lib/ai/generateAudio";
+import { uploadAudioToStorage } from "@/lib/firebase/storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -37,13 +40,24 @@ export async function GET(req: NextRequest) {
     try {
       let translatedContent: string | null = null;
       let tags: string[] | null = null;
+      let sectionCards: SectionCard[] | null = null;
+      let audioUrl: string | null = null;
+
       if (post.fullTranscript) {
-        const result = await summarizeVideoTranscript(
-          post.fullTranscript,
-          post.title
-        );
-        translatedContent = result?.summary ?? null;
-        tags = result?.tags ?? null;
+        const [summaryResult, cards] = await Promise.all([
+          summarizeVideoTranscript(post.fullTranscript, post.title),
+          generateSectionCards(post.fullTranscript, post.title),
+        ]);
+        translatedContent = summaryResult?.summary ?? null;
+        tags = summaryResult?.tags ?? null;
+        sectionCards = cards.length ? cards : null;
+
+        if (translatedContent) {
+          const audioBuffer = await generateAudioFromText(translatedContent);
+          if (audioBuffer) {
+            audioUrl = await uploadAudioToStorage(audioBuffer, post.guid).catch(() => null);
+          }
+        }
       }
 
       const docId = `${person.slug}_${post.guid}`;
@@ -61,7 +75,8 @@ export async function GET(req: NextRequest) {
           platform: post.platform,
           translatedContent,
           tags,
-          sectionCards: null,
+          sectionCards,
+          audioUrl,
           publishedAt: Timestamp.fromDate(post.publishedAt),
           fetchedAt: FieldValue.serverTimestamp(),
           personSlug: person.slug,
