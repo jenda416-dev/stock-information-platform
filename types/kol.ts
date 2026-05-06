@@ -14,6 +14,7 @@ export interface KolPost {
   translatedContent: string | null;
   tags: string[] | null;
   audioUrl?: string | null;
+  sectionCards?: SectionCard[] | null;
   sourceUrl: string | null;
   platform: string;
   publishedAt: string;

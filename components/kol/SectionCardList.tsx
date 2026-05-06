@@ -81,6 +81,24 @@ function SectionCardItem({ card }: { card: SectionCard }) {
             <p className="text-sm leading-relaxed text-foreground/80">{card.logic}</p>
           </div>
 
+          {/* 操作建議 */}
+          <div className="px-5 py-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldIcon />
+              <span className="text-sm font-semibold text-foreground">操作建議</span>
+              <span className={`ml-auto text-xs font-semibold px-2 py-0.5 rounded-full ${
+                card.adviceKeyword === "買進" || card.adviceKeyword === "加碼"
+                  ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                  : card.adviceKeyword === "減碼" || card.adviceKeyword === "避開"
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {card.adviceKeyword}
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed text-foreground/80">{card.advice}</p>
+          </div>
+
         </div>
       )}
     </div>
