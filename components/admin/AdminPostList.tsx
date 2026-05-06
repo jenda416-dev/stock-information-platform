@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { saveSummary } from "@/app/admin/actions";
+import { saveSummary, generateCardsAction, generateAudioAction } from "@/app/admin/actions";
 import type { SectionCard } from "@/types/kol";
 
 export interface AdminPost {
@@ -11,6 +11,7 @@ export interface AdminPost {
   summary: string | null;
   tags: string[] | null;
   sectionCards: SectionCard[] | null;
+  audioUrl?: string | null;
 }
 
 const MAX_TAGS = 5;
@@ -25,9 +26,10 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
   const [draftSummary, setDraftSummary] = useState("");
   const [draftTags, setDraftTags] = useState<string[]>([]);
   const [draftCards, setDraftCards] = useState<SectionCard[]>([]);
-  const [saved, setSaved] = useState<Record<string, { title: string | null; summary: string | null; tags: string[] | null; sectionCards: SectionCard[] | null }>>(
-    Object.fromEntries(posts.map((p) => [p.guid, { title: p.title, summary: p.summary, tags: p.tags, sectionCards: p.sectionCards }]))
+  const [saved, setSaved] = useState<Record<string, { title: string | null; summary: string | null; tags: string[] | null; sectionCards: SectionCard[] | null; audioUrl?: string | null }>>(
+    Object.fromEntries(posts.map((p) => [p.guid, { title: p.title, summary: p.summary, tags: p.tags, sectionCards: p.sectionCards, audioUrl: p.audioUrl }]))
   );
+  const [aiLoading, setAiLoading] = useState<Record<string, "cards" | "audio" | null>>({});
   const [message, setMessage] = useState<{ guid: string; type: "ok" | "error"; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -83,6 +85,32 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
   }
   function addCard() { setDraftCards((prev) => [...prev, emptyCard()]); }
   function removeCard(i: number) { setDraftCards((prev) => prev.filter((_, idx) => idx !== i)); }
+
+  async function handleGenerateCards() {
+    if (!openGuid || !draftSummary.trim()) return;
+    setAiLoading((prev) => ({ ...prev, [openGuid]: "cards" }));
+    const result = await generateCardsAction(openGuid, draftSummary, draftTitle);
+    setAiLoading((prev) => ({ ...prev, [openGuid]: null }));
+    if ("error" in result) {
+      setMessage({ guid: openGuid, type: "error", text: result.error ?? "未知錯誤" });
+    } else {
+      setDraftCards(result.cards ?? []);
+      setMessage({ guid: openGuid, type: "ok", text: `AI 生成 ${result.cards?.length ?? 0} 張卡片，記得儲存` });
+    }
+  }
+
+  async function handleGenerateAudio() {
+    if (!openGuid || !draftSummary.trim()) return;
+    setAiLoading((prev) => ({ ...prev, [openGuid]: "audio" }));
+    const result = await generateAudioAction(openGuid, draftSummary);
+    setAiLoading((prev) => ({ ...prev, [openGuid]: null }));
+    if ("error" in result) {
+      setMessage({ guid: openGuid, type: "error", text: result.error ?? "未知錯誤" });
+    } else {
+      setSaved((prev) => ({ ...prev, [openGuid]: { ...prev[openGuid], audioUrl: result.audioUrl } }));
+      setMessage({ guid: openGuid, type: "ok", text: "語音已生成並儲存" });
+    }
+  }
 
   function handleSave() {
     if (!openGuid) return;
@@ -165,7 +193,22 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
 
                 {/* 筆記內容 */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">筆記內容</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">筆記內容</label>
+                    <div className="flex items-center gap-2">
+                      {saved[openGuid]?.audioUrl && (
+                        <span className="text-xs text-green-600 dark:text-green-400">已有語音</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleGenerateAudio}
+                        disabled={!draftSummary.trim() || aiLoading[openGuid] === "audio"}
+                        className="text-xs text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {aiLoading[openGuid] === "audio" ? "生成中..." : "AI 自動生成語音"}
+                      </button>
+                    </div>
+                  </div>
                   <textarea value={draftSummary} onChange={(e) => setDraftSummary(e.target.value)} placeholder="從 NotebookLM 複製摘要貼在這裡..." rows={10} autoFocus className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y" />
                 </div>
 
@@ -173,7 +216,17 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">板塊分析卡片</label>
-                    <button type="button" onClick={addCard} className="text-xs text-primary hover:underline">+ 新增卡片</button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleGenerateCards}
+                        disabled={!draftSummary.trim() || aiLoading[openGuid] === "cards"}
+                        className="text-xs text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {aiLoading[openGuid] === "cards" ? "生成中..." : "AI 自動生成"}
+                      </button>
+                      <button type="button" onClick={addCard} className="text-xs text-muted-foreground hover:text-foreground">+ 手動新增</button>
+                    </div>
                   </div>
 
                   {draftCards.length === 0 ? (
@@ -205,6 +258,25 @@ export function AdminPostList({ posts }: { posts: AdminPost[] }) {
                             onChange={(e) => updateCard(i, { logic: e.target.value })}
                             placeholder="主委點評邏輯..."
                             rows={3}
+                            className="w-full rounded border bg-muted px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring resize-y"
+                          />
+                          <select
+                            value={card.adviceKeyword}
+                            onChange={(e) => updateCard(i, { adviceKeyword: e.target.value })}
+                            className="w-full rounded border bg-muted px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+                          >
+                            <option value="">選擇操作方向</option>
+                            <option value="買進">買進</option>
+                            <option value="加碼">加碼</option>
+                            <option value="觀察">觀察</option>
+                            <option value="減碼">減碼</option>
+                            <option value="避開">避開</option>
+                          </select>
+                          <textarea
+                            value={card.advice}
+                            onChange={(e) => updateCard(i, { advice: e.target.value })}
+                            placeholder="操作建議（具體 1-2 句）..."
+                            rows={2}
                             className="w-full rounded border bg-muted px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring resize-y"
                           />
                         </div>

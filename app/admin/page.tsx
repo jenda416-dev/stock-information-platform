@@ -27,6 +27,7 @@ export default async function AdminPage() {
       summary: p.translatedContent,
       tags: p.tags,
       sectionCards: p.sectionCards,
+      audioUrl: p.audioUrl ?? null,
     };
   });
 
