@@ -1,9 +1,8 @@
 # 股市資訊平台
 
-追蹤市場重要人士動態，掌握每日財經重點。
+追蹤市場重要人士動態、掌握每日財經重點的資訊整合平台。
 
-**網站：** https://stockinfo-notes.vercel.app  
-**GitHub：** https://github.com/jenda416-dev/stock-information-platform
+**線上版本：** https://stockinfo-notes.vercel.app
 
 ---
 
@@ -11,84 +10,116 @@
 
 | 頁面 | 說明 |
 |------|------|
-| **首頁** | 市場行情總覽 + KOL 最新影片筆記 |
-| **KOL 影片筆記** `/kol` | 自動抓取 YouTube 財經頻道，由 AI 生成繁體中文摘要與標籤 |
-| **每日財經摘要** `/news` | AI 每天整理 10 大財經重點，台灣時間 09:00 自動更新 |
-| **法說會** `/earnings` | 台股法說會行事曆（即將舉行）與摘要（已完成） |
-| **管理後台** `/admin` | 僅限管理員，管理 KOL 資料與法說會內容 |
-| **登入系統** | Clerk 提供用戶登入 / 註冊 |
-| **深色模式** | 支援 Light / Dark 切換 |
+| `/` | 首頁，市場概覽 + 最新 KOL 影片筆記 |
+| `/kol` | KOL 影片筆記列表，支援依人物篩選與無限捲動分頁 |
+| `/news` | 每日財經摘要，AI 自動整理 10 大重點（每日凌晨 1:00 更新） |
+| `/earnings` | 台股法說會行事曆 |
+| `/admin` | 管理後台（需登入） |
 
 ---
 
-## 技術架構
+## 技術棧
 
 | 項目 | 技術 |
 |------|------|
-| 前端框架 | Next.js 16.2 (App Router, Turbopack) |
-| UI 元件 | shadcn/ui + Tailwind CSS v4 |
-| 資料庫 | Neon PostgreSQL + Drizzle ORM |
+| 前端框架 | Next.js 16.2（App Router） |
+| UI | Tailwind CSS v4、shadcn/ui、@base-ui/react |
+| 資料庫 | Firebase Firestore（firebase-admin） |
 | 身份驗證 | Clerk |
-| AI 摘要 | Google Gemini API |
+| AI 摘要 | Google Gemini |
+| 語音合成 | OpenAI TTS |
+| 檔案儲存 | Vercel Blob |
 | 部署 | Vercel |
 
 ---
 
-## 資料庫 Schema
+## 本機開發
 
-| 資料表 | 說明 |
-|--------|------|
-| `kol_persons` | KOL 人物清單（平台、feed URL、頭像） |
-| `kol_posts` | KOL 貼文 / 影片（含 AI 摘要、tags） |
-| `news_articles` | 抓取的財經新聞原文 |
-| `news_digests` | 每日 AI 整理的 10 大重點 |
-| `earnings_calls` | 法說會行事曆與摘要 |
-| `watched_stocks` | 追蹤中的台股清單 |
-
----
-
-## 本地開發
-
-### 1. 安裝依賴
+**1. 安裝依賴**
 
 ```bash
 npm install
 ```
 
-### 2. 設定環境變數
+**2. 設定環境變數**
 
-複製 `.env.example` 並填入對應的值：
+複製 `.env.example` 並填入各服務金鑰：
 
 ```bash
 cp .env.example .env.local
 ```
 
-### 3. 執行資料庫 Migration
+| 變數 | 說明 |
+|------|------|
+| `FIREBASE_PROJECT_ID` | Firebase 專案 ID |
+| `FIREBASE_CLIENT_EMAIL` | Firebase Service Account Email |
+| `FIREBASE_PRIVATE_KEY` | Firebase Service Account 私鑰 |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk 公開金鑰 |
+| `CLERK_SECRET_KEY` | Clerk 私密金鑰 |
+| `GEMINI_API_KEY` | Google Gemini API 金鑰 |
+| `OPENAI_API_KEY` | OpenAI API 金鑰（TTS 語音） |
+| `CRON_SECRET` | Cron Job 驗證密碼（自訂隨機字串） |
+| `ADMIN_EMAIL` | 管理員 Email |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob 存取 Token |
 
-```bash
-npm run db:migrate
-```
-
-### 4. 啟動開發伺服器
+**3. 啟動開發伺服器**
 
 ```bash
 npm run dev
 ```
 
-打開 [http://localhost:3000](http://localhost:3000)
+開啟 http://localhost:3000
 
 ---
 
-## 環境變數
+## 排程任務（Cron Jobs）
 
-| Key | 說明 |
-|-----|------|
-| `DATABASE_URL` | Neon PostgreSQL 連線字串 |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Publishable Key |
-| `CLERK_SECRET_KEY` | Clerk Secret Key |
-| `GEMINI_API_KEY` | Google Gemini API Key |
-| `CRON_SECRET` | Cron job 驗證密碼（Bearer token） |
-| `ADMIN_EMAIL` | 管理員 Email（存環境變數，不寫死） |
+由 Vercel Cron 自動觸發，需在 Header 帶入 `Authorization: Bearer <CRON_SECRET>`。
+
+| 路由 | 排程 | 說明 |
+|------|------|------|
+| `/api/cron/fetch-kol` | 每日 08:00 | 抓取 KOL YouTube 頻道最新影片，以 Gemini 生成摘要與標籤 |
+| `/api/cron/fetch-gooaye` | 週三、週六 08:30 | 抓取 Gooaye 平台內容 |
+| `/api/cron/fetch-news` | 每日 01:00 | 抓取財經新聞並彙整為每日 10 大重點摘要 |
 
 ---
 
+## 專案結構
+
+```
+app/
+├── (pages)/            # 各頁面路由（kol、news、earnings、admin）
+└── api/
+    ├── cron/           # 排程任務 API
+    ├── kol/            # KOL 資料 API
+    ├── market/         # 市場資料 API
+    └── news/           # 新聞資料 API
+
+components/
+├── kol/                # KOL 相關元件
+├── market/             # 市場資料元件
+├── news/               # 新聞元件
+├── admin/              # 後台元件
+└── ui/                 # shadcn/ui 基礎元件
+
+lib/
+├── ai/                 # Gemini 摘要、OpenAI TTS
+├── collectors/         # 資料爬取（YouTube、新聞、Mops）
+└── firebase/           # Firebase Admin 初始化與集合定義
+
+types/                  # TypeScript 型別定義
+middleware.ts           # Clerk 身份驗證 Middleware
+```
+
+---
+
+## Firebase 資料結構
+
+| Collection | 說明 |
+|------------|------|
+| `kolPersons` | KOL 人物資料（名稱、平台、頭像） |
+| `kolPosts` | KOL 影片筆記（標題、摘要、標籤、語音 URL） |
+| `newsArticles` | 原始財經新聞文章 |
+| `newsDigests` | 每日財經摘要（10 大重點） |
+| `earningsCalls` | 台股法說會行程與摘要 |
+| `watchedStocks` | 追蹤中的股票清單 |
