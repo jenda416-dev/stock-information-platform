@@ -1,1 +1,0 @@
-ALTER TABLE "kol_posts" ADD COLUMN "translated_content" text;
