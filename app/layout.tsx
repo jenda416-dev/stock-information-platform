@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import Script from "next/script";
 import Link from "next/link";
-import { NavAuth } from "@/components/NavAuth";
 import { NavMenu } from "@/components/NavMenu";
-import { ClerkProvider } from "@clerk/nextjs";
-import { currentUser } from "@clerk/nextjs/server";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,17 +16,12 @@ export const metadata: Metadata = {
   description: "追蹤市場 KOL 動態與每日財經摘要",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await currentUser();
-  const email = user?.emailAddresses?.[0]?.emailAddress;
-  const isAdmin = email === process.env.ADMIN_EMAIL;
-
   return (
-    <ClerkProvider>
     <html lang="zh-TW" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <Script
@@ -51,13 +44,12 @@ export default async function RootLayout({
             </Link>
             <NavMenu />
             <div className="ml-auto flex items-center gap-3">
-              <NavAuth isAdmin={isAdmin} />
+              <ThemeToggle />
             </div>
           </nav>
         </header>
         <main className="flex-1">{children}</main>
       </body>
     </html>
-    </ClerkProvider>
   );
 }
