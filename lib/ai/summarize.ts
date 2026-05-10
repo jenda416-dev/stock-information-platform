@@ -4,7 +4,7 @@ import type { BulletPoint } from "@/types/news";
 
 export async function summarizeNews(articles: NewsArticle[]): Promise<BulletPoint[]> {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const articleList = articles
     .slice(0, 30)

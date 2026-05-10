@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import { SectionCardList } from "@/components/kol/SectionCardList";
 import { YoutubeEmbed } from "@/components/kol/YoutubeEmbed";
 import { ReadingProgressBar } from "@/components/kol/ReadingProgressBar";
+import { MarkdownContent } from "@/components/kol/MarkdownContent";
+import { PlainTextContent } from "@/components/kol/PlainTextContent";
+import { ConclusionCard } from "@/components/kol/ConclusionCard";
+import { extractActionGuide } from "@/lib/extractActionGuide";
 
 interface Props {
   params: Promise<{ guid: string }>;
@@ -26,20 +30,23 @@ export default async function VideoDetailPage({ params }: Props) {
   const post = doc.data() as KolPostDoc;
   const publishedAt = post.publishedAt;
 
-  const allPostsSnap = await adminDb
+  const recentPostsSnap = await adminDb
     .collection("kolPosts")
     .where("personId", "==", post.personId)
-    .orderBy("publishedAt", "asc")
+    .orderBy("publishedAt", "desc")
+    .limit(5)
     .get();
 
-  const allPosts = allPostsSnap.docs.map((d) => d.data() as KolPostDoc);
+  // Reverse to get chronological order (oldest to newest within the top 5)
+  const allPosts = recentPostsSnap.docs.map((d) => d.data() as KolPostDoc).reverse();
   const idx = allPosts.findIndex((p) => p.guid === post.guid);
+  
   const prevPost =
     idx > 0
       ? { guid: allPosts[idx - 1].guid, title: allPosts[idx - 1].title }
       : null;
   const nextPost =
-    idx < allPosts.length - 1
+    idx !== -1 && idx < allPosts.length - 1
       ? { guid: allPosts[idx + 1].guid, title: allPosts[idx + 1].title }
       : null;
 
@@ -53,22 +60,33 @@ export default async function VideoDetailPage({ params }: Props) {
   });
   const cards = post.sectionCards ?? [];
   const hasCards = cards.length > 0;
+  const allStocks = Array.from(new Set(cards.flatMap((c) => c.stocks)));
+  const rawCleanContent = post.translatedContent
+    // remove YAML frontmatter (e.g. --- videoId: xxx ---)
+    ?.replace(/^---\n[\s\S]*?\n---\n*/, "")
+    // fix [[HH:MM](url)] and [[HH:MM] double-bracket timestamps
+    ?.replace(/\[\[(\d{1,2}:\d{2}(?::\d{2})?)\]\([^)]*\)\]/g, "[$1]")
+    ?.replace(/\[\[(\d{1,2}:\d{2}(?::\d{2})?)\]/g, "[$1]")
+    // add space between timestamp and title when missing: [HH:MM]Title → [HH:MM] Title
+    ?.replace(/(\[\d{1,2}:\d{2}(?::\d{2})?\])([^\s\[\](<])/g, "$1 $2")
+    // flatten sub-bullet "- 深度解析：" into parent bullet
+    ?.replace(/\n[ \t]*\n[ \t]+[-*+][ \t]+深度解析[：:][ \t]*/g, " ")
+    ?.replace(/\n+#{1,3}[^\n]*\n+(?:#\S+\s*)+$/, "")
+    ?.replace(/\n#{1,3}[^\n]*潛在標的[^\n]*(?:\n(?!#{1,3}).*)*/, "")
+    ?.replace(/深度解析[：:]\s*/g, "")
+    .trimEnd() ?? null;
+  const isMarkdown = !!rawCleanContent?.match(/^#{1,3} /m);
+
+  const { mainContent: cleanContent, conclusion, actionGuide } =
+    isMarkdown && rawCleanContent
+      ? extractActionGuide(rawCleanContent)
+      : { mainContent: rawCleanContent, conclusion: null, actionGuide: null };
 
   return (
     <>
     <ReadingProgressBar />
     <div className={`${hasCards ? "max-w-5xl" : "max-w-2xl"} mx-auto py-5 sm:py-8 px-4`}>
-      <Link
-        href="/kol"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-5 group min-h-[44px]"
-      >
-        <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-        KOL 影片筆記
-      </Link>
-
-      <div className={hasCards ? "grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 lg:gap-8 items-start" : ""}>
+<div className={hasCards ? "grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 lg:gap-8 items-start" : ""}>
         {/* 主欄：影片 + 內容 */}
         <div>
           <div className="relative w-full aspect-video rounded-lg sm:rounded-xl overflow-hidden mb-2">
@@ -101,34 +119,85 @@ export default async function VideoDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4 sm:mb-5">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-0.5 text-[13px] sm:text-[14px] font-medium px-2.5 sm:px-3 py-1 rounded-full bg-muted text-muted-foreground border border-border/60"
-                >
-                  <span className="opacity-50">#</span>
-                  {tag}
-                </span>
-              ))}
+          {allStocks.length > 0 && (
+            <div className="mb-4 sm:mb-5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
+                <h2 className="text-base font-semibold">提及標的</h2>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {allStocks.map((s) => {
+                  let url = null;
+                  const twMatch = s.match(/(\d{4,5})$/);
+                  if (twMatch) {
+                    url = `https://tw.stock.yahoo.com/quote/${twMatch[1]}`;
+                  } else if (/^[A-Z]{1,5}$/.test(s)) {
+                    url = `https://finance.yahoo.com/quote/${s}`;
+                  } else if (/^[A-Za-z0-9\s]+$/.test(s)) {
+                    url = `https://finance.yahoo.com/lookup?s=${encodeURIComponent(s)}`;
+                  }
+                  const cls = "inline-flex items-center gap-1 text-[13px] font-medium px-2.5 py-1 rounded-full bg-primary/8 text-primary border border-primary/20 hover:bg-primary/15 transition-colors";
+                  return url ? (
+                    <a key={s} href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+                      {s}
+                      <svg className="w-3 h-3 opacity-60 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <span key={s} className={cls}>{s}</span>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {post.translatedContent ? (
+          {cleanContent ? (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
                 <h2 className="text-base font-semibold">文字精華重點</h2>
               </div>
-              <div className="rounded-lg bg-muted/40 border border-border/50 p-3 sm:p-4">
-                <div className="text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">
-                  {post.translatedContent}
-                </div>
+              <div className="rounded-lg bg-muted/40 border border-border/50 p-5 sm:p-6">
+                {isMarkdown ? (
+                  <MarkdownContent content={cleanContent} />
+                ) : (
+                  <PlainTextContent content={cleanContent} />
+                )}
               </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">尚未上傳文字重點，請前往管理頁面新增。</p>
+          )}
+
+          {(conclusion || actionGuide) && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
+                <h2 className="text-base font-semibold">結論與行動指南</h2>
+              </div>
+              <ConclusionCard conclusion={conclusion} actionGuide={actionGuide} />
+            </div>
+          )}
+
+          {post.tags && post.tags.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
+                <h2 className="text-base font-semibold">關鍵字</h2>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-0.5 text-[12px] font-medium px-2 py-0.5 rounded bg-muted/70 text-muted-foreground"
+                  >
+                    <span className="opacity-40">#</span>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
           {post.audioUrl && (

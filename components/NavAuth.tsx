@@ -59,19 +59,6 @@ function UserMenu({ isAdmin }: { isAdmin: boolean }) {
           </div>
 
           <div className="py-1">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-muted transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-muted-foreground">
-                  <path fillRule="evenodd" d="M6.955 1.45A.5.5 0 0 1 7.5 1h1a.5.5 0 0 1 .545.45l.17 1.52a5.06 5.06 0 0 1 .672.276l1.243-.87a.5.5 0 0 1 .634.067l.708.708a.5.5 0 0 1 .067.634l-.87 1.243a5.11 5.11 0 0 1 .276.672l1.52.17A.5.5 0 0 1 15 6.5v1a.5.5 0 0 1-.45.545l-1.52.17a5.11 5.11 0 0 1-.276.672l.87 1.243a.5.5 0 0 1-.067.634l-.708.708a.5.5 0 0 1-.634.067l-1.243-.87a5.06 5.06 0 0 1-.672.276l-.17 1.52A.5.5 0 0 1 8.5 15h-1a.5.5 0 0 1-.545-.45l-.17-1.52a5.06 5.06 0 0 1-.672-.276l-1.243.87a.5.5 0 0 1-.634-.067l-.708-.708a.5.5 0 0 1-.067-.634l.87-1.243a5.06 5.06 0 0 1-.276-.672l-1.52-.17A.5.5 0 0 1 1 8.5v-1a.5.5 0 0 1 .45-.545l1.52-.17a5.06 5.06 0 0 1 .276-.672l-.87-1.243a.5.5 0 0 1 .067-.634l.708-.708a.5.5 0 0 1 .634-.067l1.243.87a5.06 5.06 0 0 1 .672-.276l.17-1.52ZM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" clipRule="evenodd" />
-                </svg>
-                管理
-              </Link>
-            )}
-
             <div className="flex items-center justify-between px-4 py-2.5">
               <div className="flex items-center gap-3">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-muted-foreground">

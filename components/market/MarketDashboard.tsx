@@ -82,8 +82,7 @@ export function MarketDashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
-          <h2 className="text-base font-semibold">市場行情</h2>
+          <h2 className="text-base font-semibold">🌍 市場行情</h2>
         </div>
         <div className="flex items-center gap-3">
           {fetchedAt && (

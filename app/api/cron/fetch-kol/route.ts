@@ -3,7 +3,7 @@ import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { KolPersonDoc, KolPostDoc } from "@/lib/firebase/collections";
 import { fetchYoutubePosts } from "@/lib/collectors/youtube";
-import { summarizeVideoTranscript } from "@/lib/ai/summarizeVideo";
+import { summarizeVideoTranscript, generateSectionCards } from "@/lib/ai/summarizeVideo";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
         try {
           let translatedContent: string | null = null;
           let tags: string[] | null = null;
+          let sectionCards = null;
           if (post.fullTranscript) {
             const result = await summarizeVideoTranscript(
               post.fullTranscript,
@@ -48,6 +49,10 @@ export async function GET(req: NextRequest) {
             );
             translatedContent = result?.summary ?? null;
             tags = result?.tags ?? null;
+            if (translatedContent) {
+              const cards = await generateSectionCards(translatedContent, post.title);
+              sectionCards = cards.length ? cards : null;
+            }
           }
 
           const docId = `${person.slug}_${post.guid}`;
@@ -65,7 +70,7 @@ export async function GET(req: NextRequest) {
               platform: post.platform,
               translatedContent,
               tags,
-              sectionCards: null,
+              sectionCards,
               publishedAt: Timestamp.fromDate(post.publishedAt),
               fetchedAt: FieldValue.serverTimestamp(),
               personSlug: person.slug,

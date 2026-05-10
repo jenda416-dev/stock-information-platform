@@ -39,23 +39,10 @@ export interface NewsDigestDoc {
   status: string;
 }
 
-export interface EarningsCallDoc {
-  stockCode: string;
-  stockName: string;
-  callDate: string;
-  callTime: string | null;
-  location: string | null;
-  officialUrl: string | null;
-  pdfUrl: string | null;
-  status: string;
-  summary: string | null;
-  updatedAt: Timestamp;
-  createdAt: Timestamp;
-}
-
 export interface WatchedStockDoc {
   stockCode: string;
   stockName: string;
   isActive: boolean;
   createdAt: Timestamp;
 }
+

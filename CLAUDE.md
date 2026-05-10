@@ -11,7 +11,6 @@
 - 身份驗證用 Clerk，不要用其他套件
 - Server component 用 `currentUser()` 取得用戶資料，不要在 middleware 做 email 判斷
 - `ADMIN_EMAIL` 存在環境變數，不要寫死在代碼裡
-- Next.js 16 用 `proxy.ts` 取代 `middleware.ts`（breaking change），不要建立 `middleware.ts`
 - Yahoo Finance API 用 `range=7d&interval=1d`，不要用 `range=5d`（加密貨幣 24/7 交易，5d 有時抓不到本週一的資料）
 
 ## Commit 規範

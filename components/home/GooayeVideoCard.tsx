@@ -15,11 +15,26 @@ export interface VideoSummary {
 const PREVIEW_LENGTH = 150;
 
 export function GooayeVideoCard({ video }: { video: VideoSummary }) {
-  const displayText = video.summary
-    ? video.summary.length > PREVIEW_LENGTH
-      ? video.summary.slice(0, PREVIEW_LENGTH) + "…"
-      : video.summary
-    : null;
+  const contentWithoutYaml = video.summary?.replace(/^---\n[\s\S]*?\n---\n*/, "") || "";
+  const titleMatch = contentWithoutYaml.match(/^\s*#+\s+(.+?)(?:\n|$)/);
+  const previewTitle = titleMatch ? titleMatch[1].replace(/[*_~`]/g, "").trim() : null;
+
+  let bodyContent = contentWithoutYaml;
+  if (titleMatch) {
+    bodyContent = bodyContent.slice(titleMatch.index! + titleMatch[0].length);
+  }
+
+  const cleanBody = bodyContent
+    .replace(/^\s*#+\s+前言\s*/i, "") // remove "### 前言"
+    .replace(/📌\s*影片主旨\s*/g, "") // remove "📌 影片主旨"
+    .replace(/#+\s+/g, "") // remove other headings
+    .replace(/!\[.*?\]\(.*?\)/g, "") // remove images
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1") // replace links with just text
+    .replace(/[*_~`]/g, "") // remove bold/italic/code
+    .replace(/\n+/g, " ") // convert newlines to spaces
+    .trim();
+
+  const previewText = cleanBody ? cleanBody.slice(0, 300) : null;
 
   const relativeTime = formatDistanceToNow(new Date(video.publishedAt), {
     addSuffix: true,
@@ -28,8 +43,8 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
 
   return (
     <Link href={`/kol/${video.videoId}`} className="block group cursor-pointer">
-      <Card className="overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0">
-        <CardHeader className="pb-2 pt-3">
+      <Card className="gap-2 overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0">
+        <CardHeader className="pb-0 pt-0">
           <div className="flex items-start gap-3">
             <div className="relative flex-shrink-0">
               <img
@@ -41,7 +56,7 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <p className="font-bold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">{video.title}</p>
+                <p className="font-bold text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">{video.title}</p>
                 <span className="flex-shrink-0 text-xs font-medium text-primary-foreground bg-primary rounded-md px-2.5 py-1 whitespace-nowrap group-hover:bg-primary/90 transition-colors">
                   查看筆記
                 </span>
@@ -58,25 +73,32 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
           </div>
         </CardHeader>
 
-        {(video.tags?.length || displayText) && (
-          <CardContent className="pt-0 space-y-2.5">
-            {video.tags && video.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {video.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-0.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase tracking-wide"
-                  >
-                    <span className="opacity-50">#</span>
-                    {tag}
-                  </span>
-                ))}
+        {(previewTitle || previewText || video.tags?.length) && (
+          <CardContent className="pt-0 space-y-3">
+            {(previewTitle || previewText) && (
+              <div className="space-y-1.5">
+                {previewTitle && (
+                  <h3 className="font-bold text-[15px] leading-snug text-foreground/90">{previewTitle}</h3>
+                )}
+                {previewText && (
+                  <p className="text-sm leading-relaxed text-foreground/75 line-clamp-2">{previewText}</p>
+                )}
               </div>
             )}
-            {displayText && (
+            {video.tags && video.tags.length > 0 && (
               <>
-                {video.tags && video.tags.length > 0 && <div className="border-t border-border/40" />}
-                <p className="text-sm leading-relaxed text-foreground/75">{displayText}</p>
+                {(previewTitle || previewText) && <div className="border-t border-border/40" />}
+                <div className="flex flex-wrap gap-1.5">
+                  {video.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-0.5 text-[12px] font-medium px-2 py-0.5 rounded bg-muted/70 text-muted-foreground"
+                    >
+                      <span className="opacity-40">#</span>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </>
             )}
           </CardContent>

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/kol", label: "KOL 影片筆記" },
-  { href: "/earnings", label: "法說會" },
 ];
 
 export function NavMenu() {

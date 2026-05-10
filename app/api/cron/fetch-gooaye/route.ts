@@ -4,7 +4,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { KolPersonDoc, KolPostDoc } from "@/lib/firebase/collections";
 import type { SectionCard } from "@/types/kol";
 import { fetchYoutubePosts } from "@/lib/collectors/youtube";
-import { summarizeVideoTranscript, generateSectionCards } from "@/lib/ai/summarizeVideo";
+import { generateGooayeMarkdownSummary, generateSectionCards, extractTagsFromSummary } from "@/lib/ai/summarizeVideo";
 import { generateAudioFromText } from "@/lib/ai/generateAudio";
 import { uploadAudioToStorage } from "@/lib/firebase/storage";
 
@@ -49,16 +49,17 @@ export async function GET(req: NextRequest) {
       let audioUrl: string | null = null;
 
       if (post.fullTranscript) {
-        const [summaryResult, cards] = await Promise.all([
-          summarizeVideoTranscript(post.fullTranscript, post.title),
-          generateSectionCards(post.fullTranscript, post.title),
-        ]);
-        translatedContent = summaryResult?.summary ?? null;
-        tags = summaryResult?.tags ?? null;
-        sectionCards = cards.length ? cards : null;
+        const markdownResult = await generateGooayeMarkdownSummary(post.fullTranscript, post.title);
+        translatedContent = markdownResult?.summary ?? null;
+        const audioText = markdownResult?.audioText ?? null;
 
         if (translatedContent) {
-          const audioBuffer = await generateAudioFromText(translatedContent);
+          tags = await extractTagsFromSummary(translatedContent, post.title);
+          const [cards, audioBuffer] = await Promise.all([
+            generateSectionCards(post.fullTranscript, post.title),
+            audioText ? generateAudioFromText(audioText) : Promise.resolve(null),
+          ]);
+          sectionCards = cards.length ? cards : null;
           if (audioBuffer) {
             audioUrl = await uploadAudioToStorage(audioBuffer, post.guid).catch(() => null);
           }
