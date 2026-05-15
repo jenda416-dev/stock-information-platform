@@ -67,7 +67,7 @@ if (!getApps().length) {
 }
 
 const db = getFirestore();
-const VAULT_DIR = "/Users/alexchen/Documents/Obsidian Vault/股癌文字摘要";
+const VAULT_DIR = "/Users/alexchen/Desktop/Coding Chicken/Obsidian/股癌文字摘要/raw/股癌文字摘要";
 
 async function syncGooaye() {
   const files = readdirSync(VAULT_DIR).filter((f) => f.startsWith("EP") && f.endsWith(".md"));

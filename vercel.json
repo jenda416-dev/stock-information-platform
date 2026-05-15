@@ -1,16 +1,8 @@
 {
   "crons": [
     {
-      "path": "/api/cron/fetch-kol",
-      "schedule": "0 8 * * *"
-    },
-    {
       "path": "/api/cron/fetch-gooaye",
       "schedule": "30 8 * * 3,6"
-    },
-    {
-      "path": "/api/cron/fetch-news",
-      "schedule": "0 1 * * *"
     }
   ]
 }

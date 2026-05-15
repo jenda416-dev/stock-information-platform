@@ -26,7 +26,7 @@ export async function extractTagsFromSummary(
 
     // Fallback to AI generation
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const result = await model.generateContent(
       `你是一位財經分析師。以下是 YouTube 影片「${title}」的文字摘要。
@@ -61,7 +61,7 @@ export async function generateSectionCards(
 ): Promise<SectionCard[]> {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const result = await model.generateContent(
       `你是財經分析師，正在整理 YouTube 影片「${title}」的逐字稿。
@@ -126,7 +126,7 @@ export async function summarizeVideoTranscript(
 ): Promise<VideoSummaryResult | null> {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const result = await model.generateContent(
       `你是一位財經分析師。以下是 YouTube 影片「${title}」的逐字稿內容。
@@ -168,7 +168,7 @@ export async function generateGooayeMarkdownSummary(
 ): Promise<{ summary: string; audioText: string } | null> {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `請幫我將以下股癌（Gooaye）的節目內容整理成文字摘要，並「嚴格」依照我提供的 Markdown 格式輸出。
 請直接給出排版好的結果，不需要任何額外的問候語或解釋：
