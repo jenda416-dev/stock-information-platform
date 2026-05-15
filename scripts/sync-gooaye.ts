@@ -38,11 +38,16 @@ function parseCardsFromNotes(notes: string): SectionCard[] {
       ? descMatch[1].replace(/\s*_\(.*?\)_/g, "").replace(/\n\s*/g, " ").trim()
       : "";
 
-    // 股票代號：數字4碼（含-KY）或英文2-5碼大寫
-    const stockMatches = rawTitle.match(/\b([A-Z]{2,5}|\d{4}(?:-KY)?)\b/g) ?? [];
-    const stocks = [...new Set(stockMatches)];
+    // Only look for stocks inside （...） brackets; fall back to full title if none
+    const searchArea = rawTitle.match(/[（(]([^）)]+)[）)]/)?.[1] ?? rawTitle;
+    // Extract "中文名 代號" pairs (e.g., "國巨 2327"), then any remaining tickers
+    const namedPairs = [...searchArea.matchAll(/([一-鿿]{1,8})\s+(\d{4}(?:-KY)?)/g)];
+    const pairedCodes = new Set(namedPairs.map((m) => m[2]));
+    const namedStocks = namedPairs.map((m) => `${m[1]} ${m[2]}`);
+    const allRaw = searchArea.match(/\b([A-Z]{2,5}|\d{4}(?:-KY)?)\b/g) ?? [];
+    const stocks = [...new Set([...namedStocks, ...allRaw.filter((s) => !pairedCodes.has(s))])];
 
-    const cleanTitle = rawTitle.replace(/\s*\(.*?\)/g, "").trim().slice(0, 20);
+    const cleanTitle = rawTitle.replace(/\s*[（(][^）)]*[）)]/g, "").replace(/[：:]\s*$/, "").trim().slice(0, 20);
 
     cards.push({
       title: cleanTitle,
