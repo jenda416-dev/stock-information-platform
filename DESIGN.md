@@ -194,10 +194,17 @@ bg-[#113153] hover:bg-[#17406a] dark:bg-primary/20 dark:hover:bg-primary/30
 
 ## 互動狀態
 
-- 過渡預設：`transition-all duration-200` 或 `transition-colors`
-- 快速過渡：`duration-100`（進度條等）
+| Token | ms | 使用時機 |
+|-------|----|---------|
+| `duration-150` | 150ms | 按鈕 press（`active:scale-[0.97]`） |
+| `duration-200` | 200ms | 一般 hover（顏色、陰影、透明度）— 預設 |
+| `duration-300` | 300ms | 展開／收合動畫（`grid-rows`、`opacity`） |
+
+- Easing 統一用 Tailwind 預設（`ease-in-out`），展開動畫才明確加
+- 禁止 `hover:-translate-y-*`，改用 `hover:shadow-md` 表現懸浮感
+- Property utility：`transition-colors`（單一色屬性）/ `transition-all`（同時跑多屬性）/ `transition-transform`（縮放、位移）
 - Hover 文字連結：`hover:text-primary/80 transition-colors`
-- Focus：`focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50`
+- Focus：`focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50`
 - Disabled：`disabled:opacity-50 disabled:cursor-not-allowed`
 
 ### Component States 對照表
@@ -208,6 +215,40 @@ bg-[#113153] hover:bg-[#17406a] dark:bg-primary/20 dark:hover:bg-primary/30
 | Ghost / Link | `text-foreground/80` | `text-primary/80` | `focus-visible:ring-[3px]` | `text-primary` | `opacity-50 cursor-not-allowed` |
 | Card | `shadow-none` | `shadow-md` | — | — | — |
 | Input | `border-border` | `border-border` | `border-ring ring-[3px] ring-ring/50` | — | `opacity-50 cursor-not-allowed` |
+
+---
+
+## 表單元件
+
+### 共用基礎 class
+
+```
+rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground
+placeholder:text-muted-foreground
+focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50
+transition-shadow duration-150
+disabled:opacity-50 disabled:cursor-not-allowed
+```
+
+### 狀態變化
+
+| 狀態 | 差異 |
+|------|------|
+| 預設 | 基礎 class |
+| 錯誤 | `border-destructive` + focus: `ring-destructive/40` |
+| 停用 | `disabled:opacity-50 disabled:cursor-not-allowed` |
+
+### Select
+
+加 `appearance-none pr-8 cursor-pointer`，搭配絕對定位的 ChevronIcon（`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-muted-foreground`）。
+
+### Textarea
+
+加 `resize-y min-h-[96px]`。
+
+### Label
+
+`text-sm font-medium`，加 `htmlFor` 對應 input `id`（可及性）。錯誤訊息放 input 下方，用 `text-xs text-destructive`。
 
 ---
 

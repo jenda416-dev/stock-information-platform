@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { SectionTitle } from "./_components/helpers";
 import { ColorSection } from "./_components/ColorSection";
 import { TypographySection } from "./_components/TypographySection";
@@ -11,12 +12,18 @@ import { IconSection } from "./_components/IconSection";
 import { DarkModeSection } from "./_components/DarkModeSection";
 import { LayoutSection } from "./_components/LayoutSection";
 import { DosDontsSection } from "./_components/DosDontsSection";
+import { TransitionSection } from "./_components/TransitionSection";
+import { FormSection } from "./_components/FormSection";
 
 export const metadata: Metadata = {
   title: "Design System — 股市資訊平台",
 };
 
 export default function DesignPage() {
+  if (process.env.NODE_ENV === "production") {
+    redirect("/");
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-16">
 
@@ -73,6 +80,16 @@ export default function DesignPage() {
       <section>
         <SectionTitle>Dark Mode</SectionTitle>
         <DarkModeSection />
+      </section>
+
+      <section>
+        <SectionTitle>Transition &amp; Animation</SectionTitle>
+        <TransitionSection />
+      </section>
+
+      <section>
+        <SectionTitle>表單元件</SectionTitle>
+        <FormSection />
       </section>
 
       <section>
