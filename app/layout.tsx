@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import Script from "next/script";
 import Link from "next/link";
 import { NavMenu } from "@/components/NavMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -24,9 +23,7 @@ export default function RootLayout({
   return (
     <html lang="zh-TW" className={`${geistSans.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
+        <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}

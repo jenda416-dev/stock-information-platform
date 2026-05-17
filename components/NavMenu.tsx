@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/kol", label: "KOL 影片筆記" },
+  { href: "/calculator", label: "存股計算機" },
 ];
 
 export function NavMenu() {
