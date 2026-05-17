@@ -172,10 +172,6 @@ export default async function VideoDetailPage({ params }: Props) {
 
           {(conclusion || actionGuide) && (
             <div className="mt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
-                <h2 className="text-base font-semibold">結論與行動指南</h2>
-              </div>
               <ConclusionCard conclusion={conclusion} actionGuide={actionGuide} />
             </div>
           )}

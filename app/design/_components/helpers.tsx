@@ -9,7 +9,7 @@ export function SectionTitle({ children }: { children: React.ReactNode }) {
 
 export function SubTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
       {children}
     </h3>
   );

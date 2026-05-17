@@ -16,7 +16,7 @@ export function TypographySection() {
     <div className="space-y-4 bg-card rounded-xl border border-border p-6">
       {samples.map(({ label, el }, i) => (
         <div key={i} className={i < samples.length - 1 ? "border-b border-border/50 pb-4" : ""}>
-          <p className="text-[11px] font-mono text-muted-foreground mb-1">{label}</p>
+          <p className="text-sm font-mono text-muted-foreground mb-1">{label}</p>
           {el}
         </div>
       ))}

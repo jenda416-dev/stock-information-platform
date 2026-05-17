@@ -29,7 +29,7 @@ export function NewsBulletPoint({ index, bullet }: Props) {
                   className="no-underline"
                 >
                   <Badge variant="outline" className="text-xs hover:bg-accent cursor-pointer truncate max-w-[200px]">
-                    📰 {src.title}
+                    {src.title}
                   </Badge>
                 </a>
               ))}

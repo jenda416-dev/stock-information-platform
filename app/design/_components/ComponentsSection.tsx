@@ -51,28 +51,28 @@ function ButtonsDemo() {
           <button className="flex-shrink-0 text-xs font-medium text-primary-foreground bg-primary rounded-md px-2.5 py-1 hover:bg-primary/90 active:scale-[0.97] transition-all duration-150 cursor-pointer">
             查看筆記
           </button>
-          <p className="text-[10px] font-mono text-muted-foreground">CTA</p>
+          <p className="text-sm font-mono text-muted-foreground">CTA</p>
         </div>
         <div className="space-y-1.5 text-center">
           <button className="text-primary text-xs font-medium hover:text-primary/80 active:text-primary/60 transition-colors cursor-pointer underline-offset-2 hover:underline">
             文字連結
           </button>
-          <p className="text-[10px] font-mono text-muted-foreground">Link</p>
+          <p className="text-sm font-mono text-muted-foreground">Link</p>
         </div>
         <div className="space-y-1.5 text-center">
           <button className="font-mono text-[11px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded hover:bg-primary/20 active:bg-primary/30 active:scale-[0.97] transition-all duration-150 cursor-pointer">
             12:34
           </button>
-          <p className="text-[10px] font-mono text-muted-foreground">時間軸</p>
+          <p className="text-sm font-mono text-muted-foreground">時間軸</p>
         </div>
         <div className="space-y-1.5 text-center">
           <button disabled className="text-xs font-medium text-primary-foreground bg-primary rounded-md px-2.5 py-1 opacity-50 cursor-not-allowed">
             已停用
           </button>
-          <p className="text-[10px] font-mono text-muted-foreground">Disabled</p>
+          <p className="text-sm font-mono text-muted-foreground">Disabled</p>
         </div>
       </div>
-      <p className="text-[10px] font-mono text-muted-foreground">試試 hover 與 click，可以感受顏色變化與縮放回饋。</p>
+      <p className="text-sm font-mono text-muted-foreground">試試 hover 與 click，可以感受顏色變化與縮放回饋。</p>
     </div>
   );
 }
@@ -93,7 +93,7 @@ function TagsDemo() {
           </button>
         ))}
       </div>
-      <p className="text-[10px] font-mono text-muted-foreground">hover 背景加深。</p>
+      <p className="text-sm font-mono text-muted-foreground">hover 背景加深。</p>
     </div>
   );
 }
@@ -132,7 +132,7 @@ function CardsDemo() {
           <p className="text-xs font-semibold tabular-nums text-red-500 dark:text-red-400">+1.55%</p>
         </div>
       </div>
-      <p className="text-[10px] font-mono text-muted-foreground">hover 可見 shadow 與標題顏色變化。</p>
+      <p className="text-sm font-mono text-muted-foreground">hover 可見 shadow 與標題顏色變化。</p>
     </div>
   );
 }
@@ -147,28 +147,28 @@ function InteractiveStatesDemo() {
           <button className="w-full h-9 rounded-md bg-primary text-primary-foreground text-xs font-medium">
             Default
           </button>
-          <p className="text-[10px] text-muted-foreground font-mono">bg-primary</p>
+          <p className="text-sm text-muted-foreground font-mono">bg-primary</p>
         </div>
         <div className="space-y-2">
           <button className="w-full h-9 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors">
             Hover 我
           </button>
-          <p className="text-[10px] text-muted-foreground font-mono">hover:bg-primary/90</p>
+          <p className="text-sm text-muted-foreground font-mono">hover:bg-primary/90</p>
         </div>
         <div className="space-y-2">
           <button className="w-full h-9 rounded-md bg-primary text-primary-foreground text-xs font-medium focus-visible:ring-[3px] focus-visible:ring-ring/50 outline-none">
             Tab Focus
           </button>
-          <p className="text-[10px] text-muted-foreground font-mono">ring-[3px] ring-ring/50</p>
+          <p className="text-sm text-muted-foreground font-mono">ring-[3px] ring-ring/50</p>
         </div>
         <div className="space-y-2">
           <button disabled className="w-full h-9 rounded-md bg-primary text-primary-foreground text-xs font-medium opacity-50 cursor-not-allowed">
             Disabled
           </button>
-          <p className="text-[10px] text-muted-foreground font-mono">opacity-50</p>
+          <p className="text-sm text-muted-foreground font-mono">opacity-50</p>
         </div>
       </div>
-      <p className="mt-4 text-[10px] text-muted-foreground font-mono">
+      <p className="mt-4 text-sm text-muted-foreground font-mono">
         過渡時長：duration-200（預設）· duration-150（按鈕 press）· duration-300（展開動畫）
       </p>
     </div>
@@ -184,7 +184,7 @@ function MarkdownDemo() {
         這是 blockquote 引用區塊，用於重要摘要或主委語錄。
       </div>
       <div className="space-y-1">
-        <p className="text-[11px] font-mono text-muted-foreground">行內 code：</p>
+        <p className="text-sm font-mono text-muted-foreground">行內 code：</p>
         <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">npm run dev</code>
       </div>
     </div>
@@ -203,7 +203,7 @@ export function ComponentsSection() {
             <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
             <h2 className="text-base font-semibold">股癌 Gooaye 最新節目</h2>
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground">{`w-0.5 h-5 rounded-full bg-primary`}</p>
+          <p className="text-sm font-mono text-muted-foreground">{`w-0.5 h-5 rounded-full bg-primary`}</p>
         </div>
       </div>
 
@@ -231,7 +231,7 @@ export function ComponentsSection() {
             <span className="inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">空方</span>
             <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">主色</span>
           </div>
-          <p className="text-[10px] font-mono text-muted-foreground">rounded-full · text-xs · px-2 py-0.5</p>
+          <p className="text-sm font-mono text-muted-foreground">rounded-full · text-xs · px-2 py-0.5</p>
         </div>
       </div>
 

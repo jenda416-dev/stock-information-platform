@@ -44,7 +44,7 @@ export default function DesignPage() {
         <LayoutSection />
       </section>
 
-      <footer className="border-t border-border/50 pt-6 text-xs text-muted-foreground">
+      <footer className="border-t border-border/50 pt-6 text-sm text-muted-foreground">
         設計規範定義在 <code className="font-mono bg-muted px-1.5 py-0.5 rounded">DESIGN.md</code>，更新樣式時請同步修改。
       </footer>
 

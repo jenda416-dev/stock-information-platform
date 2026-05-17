@@ -23,20 +23,20 @@ type BrandColor = { label: string; light: string; dark: string; lightBorder?: bo
 function ColorRow({ label, light, dark, lightBorder, darkBorder }: BrandColor) {
   return (
     <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[180px_1fr_1fr] items-center gap-3 py-3 border-b border-border/40 last:border-0">
-      <span className="text-[12px] font-mono text-foreground/80 truncate">{label}</span>
+      <span className="text-sm font-mono text-foreground/80 truncate">{label}</span>
       <div className="flex items-center gap-2 min-w-0">
         <div
           className={`w-9 h-9 rounded-lg flex-shrink-0 ${lightBorder ? "border border-black/10" : ""}`}
           style={{ background: light }}
         />
-        <span className="text-[10px] font-mono text-muted-foreground hidden sm:block truncate">{light}</span>
+        <span className="text-sm font-mono text-muted-foreground hidden sm:block truncate">{light}</span>
       </div>
       <div className="flex items-center gap-2 min-w-0">
         <div
           className={`w-9 h-9 rounded-lg flex-shrink-0 ${darkBorder ? "border border-white/20" : ""}`}
           style={{ background: dark }}
         />
-        <span className="text-[10px] font-mono text-muted-foreground hidden sm:block truncate">{dark}</span>
+        <span className="text-sm font-mono text-muted-foreground hidden sm:block truncate">{dark}</span>
       </div>
     </div>
   );
@@ -49,9 +49,9 @@ export function ColorSection() {
         <SubTitle>品牌色票</SubTitle>
         <div className="bg-card rounded-xl border border-border px-4 pt-2 pb-1">
           <div className="grid grid-cols-[1fr_auto_auto] sm:grid-cols-[180px_1fr_1fr] gap-3 py-2 border-b border-border mb-1">
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Token</span>
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">亮色模式</span>
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">深色模式</span>
+            <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Token</span>
+            <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">亮色模式</span>
+            <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">深色模式</span>
           </div>
           {brandColors.map((c) => (
             <ColorRow key={c.label} {...c} />
@@ -65,7 +65,7 @@ export function ColorSection() {
           {marketColors.map((c) => (
             <div key={c.label} className="bg-card rounded-xl border border-border p-4 space-y-3">
               <div className={`h-8 w-8 rounded-lg ${c.bg}`} />
-              <p className="text-[13px] font-semibold">{c.label}</p>
+              <p className="text-sm font-semibold">{c.label}</p>
               <div className="space-y-1.5">
                 <div className={`inline-flex items-center text-xs font-semibold ${c.text}`}>▲ 文字色</div>
                 <div>
@@ -75,7 +75,7 @@ export function ColorSection() {
             </div>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-sm text-muted-foreground">
           ⚠ 台灣市場慣例：紅色 = 上漲，綠色 = 下跌，與歐美相反。
         </p>
       </div>

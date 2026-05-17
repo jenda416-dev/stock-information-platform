@@ -57,6 +57,32 @@ Dark Mode:
 
 ---
 
+## Spacing Scale
+
+Tailwind v4 spacing scale，1 unit = 4px。
+
+| Token | px | 用途 |
+|-------|----|------|
+| `0.5` | 2px | 細分隔線、icon 微偏移 |
+| `1` | 4px | icon 與文字之間的 gap |
+| `1.5` | 6px | inline code padding（`px-1.5`） |
+| `2` | 8px | tag / badge padding（`px-2 py-0.5`） |
+| `3` | 12px | 次要元素 padding |
+| `3.5` | 14px | SectionCardList 按鈕垂直 padding（`py-3.5`） |
+| `4` | 16px | **卡片 padding**、container `px-4`（主要單位） |
+| `5` | 20px | blockquote padding（`px-5`） |
+| `6` | 24px | section 間 flex gap |
+| `8` | 32px | 頁面垂直節奏 |
+| `12` | 48px | error / empty state 留白（`py-12`） |
+| `16` | 64px | 大 empty state（`py-16`） |
+
+**原則**：
+- 卡片內 padding 預設 `p-4`，資訊密集版面改 `px-4 py-3`
+- section 之間的間距用 `gap-6` 或 `gap-8`，不用 `gap-10` 以上
+- inline 元素（tag、badge）padding 固定 `px-2 py-0.5`
+
+---
+
 ## 響應式斷點
 
 Mobile-first。使用 `sm:` / `md:` / `lg:`。
@@ -67,7 +93,36 @@ Mobile-first。使用 `sm:` / `md:` / `lg:`。
 
 ---
 
+## Shadow & Elevation Scale
+
+| 層級 | Class | 使用時機 |
+|------|-------|---------|
+| 無陰影 | — | 靜止卡片（用 border 或 bg 色差製造層次） |
+| sm | `shadow-sm` | 輕微浮起、資訊密集型卡片靜止狀態 |
+| md | `shadow-md` | **卡片 hover 狀態**（配合 `transition-all duration-200`） |
+| lg | `shadow-lg` | Dropdown、Popover、Modal 等浮層元件 |
+| xl 以上 | 禁止 | 視覺太重，不符合設計語言 |
+
+Dark mode 下陰影較不明顯，以 `bg-card` 與 `bg-muted` 的色差製造層次，不要加更深的陰影補償。
+
+---
+
 ## 元件樣式規範
+
+### Border Radius Scale
+
+| Class | rem / px | 使用場景 |
+|-------|----------|---------|
+| `rounded` | 0.25rem / 4px | Tag、時間軸按鈕、inline code |
+| `rounded-md` | 0.375rem / 6px | Button、Input 等表單元件 |
+| `rounded-lg` | 0.5rem / 8px | Card、一般容器 |
+| `rounded-xl` | 0.75rem / 12px | Blockquote、特殊強調區塊 |
+| `rounded-2xl` | 1rem / 16px | 大型圖片容器、Featured card |
+| `rounded-full` | 9999px | Badge、Avatar、色條、進度條 |
+
+同一頁面混用的 radius 種類不超過 3 種。
+
+---
 
 ### Section 標題
 
@@ -145,6 +200,15 @@ bg-[#113153] hover:bg-[#17406a] dark:bg-primary/20 dark:hover:bg-primary/30
 - Focus：`focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50`
 - Disabled：`disabled:opacity-50 disabled:cursor-not-allowed`
 
+### Component States 對照表
+
+| 元件 | 預設 | Hover | Focus | Active | Disabled |
+|------|------|-------|-------|--------|---------|
+| CTA Button | `bg-primary text-primary-foreground` | `opacity-90` | `focus-visible:ring-[3px]` | `opacity-80` | `opacity-50 cursor-not-allowed` |
+| Ghost / Link | `text-foreground/80` | `text-primary/80` | `focus-visible:ring-[3px]` | `text-primary` | `opacity-50 cursor-not-allowed` |
+| Card | `shadow-none` | `shadow-md` | — | — | — |
+| Input | `border-border` | `border-border` | `border-ring ring-[3px] ring-ring/50` | — | `opacity-50 cursor-not-allowed` |
+
 ---
 
 ## Loading / Empty 狀態
@@ -172,3 +236,31 @@ bg-[#113153] hover:bg-[#17406a] dark:bg-primary/20 dark:hover:bg-primary/30
 - 偵測順序：`localStorage` → `prefers-color-scheme`
 - 切換邏輯在 `app/layout.tsx` inline script（避免閃白）
 - 禁止在元件內直接讀 `localStorage`
+
+---
+
+## Do's & Don'ts
+
+收集各 section 散落的禁止事項，集中參考。
+
+### 禁止（Don't）
+
+| 類別 | 禁止行為 | 原因 |
+|------|---------|------|
+| 動畫 | `hover:-translate-y-*` | 浮起感太強，不符設計語言 |
+| 陰影 | `shadow-xl` 或更大 | 視覺過重 |
+| 色彩 | tag 用 `bg-blue-*` 或 inline style border | 破壞色彩系統一致性 |
+| 按鈕 | CTA 用 outline 或 ghost variant | 主要行動按鈕需 solid primary |
+| 色彩 token | 直接改全域 `--card` | 應在元件層加 `dark:bg-[...]` 覆蓋 |
+| Dark mode | 在元件內直接讀 `localStorage` | 應由 layout.tsx 的 inline script 處理 |
+| Icon | 使用 emoji | 改用 inline SVG，確保跨平台一致 |
+
+### 推薦（Do）
+
+| 類別 | 推薦做法 |
+|------|---------|
+| 卡片 hover | `hover:shadow-md transition-all duration-200` |
+| 色彩調整 | 在元件加 `dark:bg-[oklch(...)]`，不動全域 token |
+| 裝飾性 icon | 加 `aria-hidden="true"` |
+| 台股漲跌色 | 紅色（多）/ 綠色（空），參考色彩系統表格 |
+| 版面寬度 | 次頁面統一 `max-w-2xl`，首頁 `max-w-5xl` |

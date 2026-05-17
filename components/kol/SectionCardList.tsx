@@ -81,7 +81,7 @@ function SectionCardItem({ card }: { card: SectionCard }) {
         <div className="overflow-hidden">
           <div className="bg-muted/20 px-5 py-4 space-y-3">
             <p className="text-sm leading-relaxed text-foreground/80">{card.logic}</p>
-            {card.advice && (
+            {card.advice && card.advice !== card.logic && (
               <p className="text-sm leading-relaxed text-foreground/70">
                 {card.advice}
               </p>
