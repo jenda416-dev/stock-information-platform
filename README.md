@@ -4,7 +4,6 @@
 
 **線上版本：** https://stockinfo-notes.vercel.app  
 **設計系統：** https://stockinfo-notes.vercel.app/design  
-**GitHub：** https://github.com/jenda416-dev/stock-information-platform
 
 ---
 
