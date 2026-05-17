@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { SectionTitle } from "./_components/helpers";
 import { ColorSection } from "./_components/ColorSection";
 import { TypographySection } from "./_components/TypographySection";
@@ -20,10 +19,6 @@ export const metadata: Metadata = {
 };
 
 export default function DesignPage() {
-  if (process.env.NODE_ENV === "production") {
-    redirect("/");
-  }
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-16">
 
