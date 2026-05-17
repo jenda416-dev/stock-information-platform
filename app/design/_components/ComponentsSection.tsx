@@ -106,7 +106,7 @@ function CardsDemo() {
       <div className="group bg-card dark:bg-[oklch(0.20_0.02_264)] rounded-xl border border-border overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer">
         <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
         <div className="p-4">
-          <p className="font-bold text-base leading-snug group-hover:text-primary transition-colors">
+          <p className="font-bold text-[15px] leading-snug group-hover:text-primary transition-colors">
             資金狂潮下的生存指南！大跌洗盤心法
           </p>
           <p className="text-sm leading-relaxed text-foreground/80 mt-1 line-clamp-2">
@@ -191,11 +191,49 @@ function MarkdownDemo() {
   );
 }
 
+// ─── Border Radius Demo ──────────────────────────────────────────────────────
+
+function BorderRadiusDemo() {
+  const radii = [
+    { label: "rounded",    rem: "0.25rem / 4px",  usage: "Tag、時間軸按鈕、inline code" },
+    { label: "rounded-md", rem: "0.375rem / 6px", usage: "Button、Input 等表單元件" },
+    { label: "rounded-lg", rem: "0.5rem / 8px",   usage: "Card、一般容器", highlight: true },
+    { label: "rounded-xl", rem: "0.75rem / 12px", usage: "Blockquote、特殊強調區塊" },
+    { label: "rounded-2xl",rem: "1rem / 16px",    usage: "大型圖片容器、Featured card" },
+    { label: "rounded-full",rem: "9999px",        usage: "Badge、Avatar、色條、進度條" },
+  ];
+
+  return (
+    <div className="bg-card rounded-xl border border-border p-6 space-y-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-5">
+        {radii.map(({ label, rem, usage, highlight }) => (
+          <div key={label} className="flex items-start gap-3">
+            <div
+              className={`w-10 h-10 flex-shrink-0 bg-primary/20 border-2 ${highlight ? "border-primary" : "border-primary/40"} ${label}`}
+            />
+            <div>
+              <code className={`text-xs font-mono block ${highlight ? "text-primary font-semibold" : "text-foreground/80"}`}>{label}</code>
+              <p className="text-xs text-muted-foreground">{rem}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{usage}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-sm text-muted-foreground font-mono">同一頁面混用的 radius 種類不超過 3 種。</p>
+    </div>
+  );
+}
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export function ComponentsSection() {
   return (
     <div className="space-y-10">
+      <div>
+        <SubTitle>Border Radius Scale</SubTitle>
+        <BorderRadiusDemo />
+      </div>
+
       <div>
         <SubTitle>Section 標題</SubTitle>
         <div className="bg-card rounded-xl border border-border p-6 space-y-3">
