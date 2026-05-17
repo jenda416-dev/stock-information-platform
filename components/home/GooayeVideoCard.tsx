@@ -43,7 +43,7 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
 
   return (
     <Link href={`/kol/${video.videoId}`} className="block group cursor-pointer">
-      <Card className="gap-2 overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0">
+      <Card className="gap-2 overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0 dark:bg-[oklch(0.20_0.02_264)]">
         <CardHeader className="pb-0 pt-0">
           <div className="flex items-start gap-3">
             <div className="relative flex-shrink-0">

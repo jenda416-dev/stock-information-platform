@@ -1,4 +1,5 @@
 @AGENTS.md
+@DESIGN.md
 
 ## 專案基本資訊
 - 網站名稱：股市資訊平台
@@ -22,22 +23,6 @@
 - 禁止使用 Lorem Ipsum 或假佔位內容，每個元素都必須有實際意義
 - 行動裝置觸碰目標（按鈕、連結）至少 44px
 
-## UI 規則
-- 所有文字顯示用繁體中文
-- 支援 dark mode，樣式用 Tailwind CSS
-- UI 元件放在 `components/ui/`，使用 shadcn 已有的元件，不要自己重寫
-- Section 標題用左側 primary 色條 accent bar：`<div className="w-0.5 h-5 rounded-full bg-primary" />`
-- 卡片 hover 效果只用 `hover:shadow-md transition-all duration-200`，不加位移（`-translate-y-*`）或 `shadow-xl`
-- 卡片左側色條用 `border-l-4`，顏色依漲跌方向（紅/綠/預設）
-- 卡片頂部加 1px gradient glow line（`h-px bg-gradient-to-r from-transparent via-*/50 to-transparent`）
-- Tags 樣式：`text-[11px] font-semibold px-2 py-0.5 rounded-full bg-muted text-muted-foreground uppercase tracking-wide`，不用 `bg-blue-*` 或 inline style border
-- CTA 按鈕用 solid primary（`bg-primary text-primary-foreground`），不用 outline 或 ghost
-- 不使用 emoji 作為 icon，改用 SVG
-
-## 版面寬度規則
-- Nav 與首頁內容統一用 `max-w-5xl mx-auto px-4`
-- 次頁面（`/kol`、`/news`、`/earnings` 等）用 `max-w-2xl mx-auto px-4`
-- 新增頁面或修改 nav 時需確認寬度一致
 
 ## Cron Jobs 規則
 - 所有 cron route 須驗證 `Authorization: Bearer <CRON_SECRET>`，未通過回傳 401

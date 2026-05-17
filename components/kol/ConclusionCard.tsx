@@ -43,7 +43,7 @@ export function ConclusionCard({ conclusion, actionGuide }: Props) {
   if (!conclusion && !actionGuide) return null;
 
   return (
-    <div className="rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 px-5 py-4 space-y-3 text-[15px] leading-[1.8] text-foreground/80">
+    <div className="rounded-xl bg-blue-50 dark:bg-blue-900/25 border border-blue-200 dark:border-blue-700/50 px-5 py-4 space-y-3 text-[15px] leading-[1.8] text-foreground/80">
       {conclusion && (
         <div>
           <h3 className="text-[15px] font-semibold text-foreground mt-0 mb-1">💡 結論</h3>

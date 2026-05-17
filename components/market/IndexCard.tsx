@@ -43,13 +43,13 @@ function getColors(change: number) {
   };
   if (change > 0) return {
     text: "text-red-500 dark:text-red-400",
-    bg: "bg-red-50/40 dark:bg-red-950/10",
+    bg: "bg-red-50/40 dark:bg-red-500/10",
     border: "border-l-red-500 dark:border-l-red-400",
     badge: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   };
   return {
     text: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50/40 dark:bg-emerald-950/10",
+    bg: "bg-emerald-50/40 dark:bg-emerald-500/10",
     border: "border-l-emerald-500 dark:border-l-emerald-400",
     badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   };

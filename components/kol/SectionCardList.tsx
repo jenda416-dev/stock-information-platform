@@ -38,7 +38,7 @@ function SectionCardItem({ card }: { card: SectionCard }) {
       {/* Header — 標題 + 標的 + badge */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-start justify-between gap-3 px-4 py-3.5 text-left min-h-[48px] bg-[#113153] hover:bg-[#17406a] transition-colors"
+        className="w-full flex items-start justify-between gap-3 px-4 py-3.5 text-left min-h-[48px] bg-[#113153] hover:bg-[#17406a] dark:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
       >
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
@@ -77,16 +77,18 @@ function SectionCardItem({ card }: { card: SectionCard }) {
       </button>
 
       {/* Body — 純文字分析 */}
-      {open && (
-        <div className="bg-muted/20 px-5 py-4 space-y-3">
-          <p className="text-sm leading-relaxed text-foreground/80">{card.logic}</p>
-          {card.advice && (
-            <p className="text-sm leading-relaxed text-foreground/70">
-              {card.advice}
-            </p>
-          )}
+      <div className={`grid transition-all duration-300 ease-in-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+        <div className="overflow-hidden">
+          <div className="bg-muted/20 px-5 py-4 space-y-3">
+            <p className="text-sm leading-relaxed text-foreground/80">{card.logic}</p>
+            {card.advice && (
+              <p className="text-sm leading-relaxed text-foreground/70">
+                {card.advice}
+              </p>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/fetch-gooaye",
-      "schedule": "30 8 * * 3,6"
+      "schedule": "30 10 * * 3,6"
     }
   ]
 }

@@ -63,7 +63,7 @@ export function FearGreedCard({ data }: Props) {
           style={{ background: "linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #ef4444 100%)" }}
         >
           <div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white border-2 border-gray-600 dark:border-gray-300 shadow-md"
+            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-background border-2 border-foreground/50 shadow-md"
             style={{ left: `${clampedScore}%` }}
           />
         </div>
