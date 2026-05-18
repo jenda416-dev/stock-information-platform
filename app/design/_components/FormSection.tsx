@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SubTitle } from "./helpers";
 
 const inputBase =
-  "w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-shadow duration-150 disabled:opacity-50 disabled:cursor-not-allowed";
+  "w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-shadow duration-150 disabled:bg-muted disabled:text-muted-foreground disabled:border-border/50 disabled:cursor-not-allowed";
 
 const inputError =
   "w-full rounded-md border border-destructive bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-destructive/40 transition-shadow duration-150";
@@ -104,6 +104,34 @@ function TextareaDemo() {
   );
 }
 
+function InputPaddingDemo() {
+  return (
+    <div className="bg-card rounded-xl border border-border p-6 space-y-5">
+      <div className="grid sm:grid-cols-2 gap-5">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">一般表單 <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">py-1.5</code></label>
+          <input
+            type="text"
+            placeholder="例：關鍵字"
+            className="w-full rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-shadow duration-150"
+          />
+          <p className="text-xs text-muted-foreground">一般搜尋、篩選等表單欄位</p>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">計算機 / 大點擊面積 <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">py-2.5</code></label>
+          <input
+            type="text"
+            placeholder="例：10,000"
+            className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-shadow duration-150"
+          />
+          <p className="text-xs text-muted-foreground">數字輸入、計算機等需要大點擊面積的欄位</p>
+        </div>
+      </div>
+      <p className="text-xs font-mono text-muted-foreground">兩者 px-3 一致，同一頁面內統一使用同一種。</p>
+    </div>
+  );
+}
+
 function LabelNote() {
   return (
     <div className="bg-muted/40 rounded-lg px-4 py-3 space-y-1">
@@ -134,6 +162,10 @@ export function FormSection() {
       <div>
         <SubTitle>Textarea</SubTitle>
         <TextareaDemo />
+      </div>
+      <div>
+        <SubTitle>Input Padding 變體</SubTitle>
+        <InputPaddingDemo />
       </div>
       <LabelNote />
     </div>

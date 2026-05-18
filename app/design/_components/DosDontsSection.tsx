@@ -6,6 +6,8 @@ const donts = [
   { category: "色彩 token", rule: "直接改全域 --card",                      reason: "應在元件層加 dark:bg-[...] 覆蓋" },
   { category: "Dark mode", rule: "元件內直接讀 localStorage",               reason: "應由 layout.tsx 的 inline script 處理" },
   { category: "Icon",      rule: "使用 emoji",                              reason: "改用 inline SVG，確保跨平台一致" },
+  { category: "Z-index",   rule: "z-50 或更高",                             reason: "應依 Z-index Scale 選值，避免層疊衝突" },
+  { category: "Input",     rule: "disabled:opacity-50 淡化整個 input",      reason: "應用 disabled:bg-muted 明確顯示背景色變化" },
 ];
 
 const dos = [

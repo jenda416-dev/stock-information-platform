@@ -36,7 +36,7 @@ function RateEditor({ annualRate, isEditing, onChange, onToggle }: {
             <path d="M12 8h.01"></path>
           </svg>
           
-          <div className="absolute bottom-full left-0 md:-left-4 mb-2 w-72 p-3 bg-foreground text-background text-[13px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl pointer-events-none">
+          <div className="absolute bottom-full left-0 md:-left-4 mb-2 w-72 p-3 bg-foreground text-background text-[13px] leading-relaxed rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-lg pointer-events-none">
             <p className="space-y-1">
               <strong className="font-semibold block mb-1">預設報酬率參考基準：</strong>
               <span className="block">・平均 <span className="font-mono text-primary-foreground">12.6%</span>：0050 成立以來長期歷史含息年化報酬率。</span>

@@ -13,89 +13,55 @@ import { LayoutSection } from "./_components/LayoutSection";
 import { DosDontsSection } from "./_components/DosDontsSection";
 import { TransitionSection } from "./_components/TransitionSection";
 import { FormSection } from "./_components/FormSection";
+import { DesignSidebar } from "./_components/DesignSidebar";
 
 export const metadata: Metadata = {
   title: "Design System — 股市資訊平台",
 };
 
-export default function DesignPage() {
+const sections: Record<string, { title: string; content: React.ReactNode }> = {
+  color:       { title: "色彩系統",                content: <ColorSection /> },
+  typography:  { title: "字體排版",                content: <TypographySection /> },
+  spacing:     { title: "Spacing Scale",          content: <SpacingSection /> },
+  shadow:      { title: "Shadow & Elevation Scale", content: <ShadowSection /> },
+  breakpoints: { title: "響應式斷點",              content: <BreakpointsSection /> },
+  layout:      { title: "版面寬度規則",             content: <LayoutSection /> },
+  components:  { title: "元件樣式規範",             content: <ComponentsSection /> },
+  forms:       { title: "表單元件",                content: <FormSection /> },
+  transition:  { title: "Transition & Animation", content: <TransitionSection /> },
+  states:      { title: "Loading / Empty 狀態",   content: <StatesSection /> },
+  icons:       { title: "Icon 規範",              content: <IconSection /> },
+  darkmode:    { title: "Dark Mode",              content: <DarkModeSection /> },
+  dosdont:     { title: "Do's & Don'ts",          content: <DosDontsSection /> },
+};
+
+export default async function DesignPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ section?: string }>;
+}) {
+  const { section = "color" } = await searchParams;
+  const current = sections[section] ?? sections.color;
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-16">
+    <div>
+      {/* Fixed sidebar */}
+      <aside className="hidden lg:block fixed top-14 left-0 bottom-0 w-60 border-r border-border bg-background overflow-y-auto z-[5]">
+        <DesignSidebar activeId={section} />
+      </aside>
 
-      <div>
-        <h1 className="text-lg sm:text-xl font-bold leading-snug mb-1">Design System</h1>
-        <p className="text-sm text-muted-foreground">股市資訊平台的視覺設計規範，供工程師與設計師參考。</p>
+      {/* Content */}
+      <div className="lg:ml-60">
+        <div className="max-w-4xl mx-auto px-6 py-10">
+          <div className="mb-8">
+            <SectionTitle>{current.title}</SectionTitle>
+          </div>
+          {current.content}
+          <footer className="border-t border-border/50 mt-16 pt-6 text-sm text-muted-foreground">
+            設計規範定義在 <code className="font-mono bg-muted px-1.5 py-0.5 rounded">DESIGN.md</code>，更新樣式時請同步修改。
+          </footer>
+        </div>
       </div>
-
-      <section>
-        <SectionTitle>色彩系統</SectionTitle>
-        <ColorSection />
-      </section>
-
-      <section>
-        <SectionTitle>字體排版</SectionTitle>
-        <TypographySection />
-      </section>
-
-      <section>
-        <SectionTitle>版面寬度規則</SectionTitle>
-        <LayoutSection />
-      </section>
-
-      <section>
-        <SectionTitle>Spacing Scale</SectionTitle>
-        <SpacingSection />
-      </section>
-
-      <section>
-        <SectionTitle>響應式斷點</SectionTitle>
-        <BreakpointsSection />
-      </section>
-
-      <section>
-        <SectionTitle>Shadow &amp; Elevation Scale</SectionTitle>
-        <ShadowSection />
-      </section>
-
-      <section>
-        <SectionTitle>元件樣式規範</SectionTitle>
-        <ComponentsSection />
-      </section>
-
-      <section>
-        <SectionTitle>Loading / Empty 狀態</SectionTitle>
-        <StatesSection />
-      </section>
-
-      <section>
-        <SectionTitle>Icon 規範</SectionTitle>
-        <IconSection />
-      </section>
-
-      <section>
-        <SectionTitle>Dark Mode</SectionTitle>
-        <DarkModeSection />
-      </section>
-
-      <section>
-        <SectionTitle>Transition &amp; Animation</SectionTitle>
-        <TransitionSection />
-      </section>
-
-      <section>
-        <SectionTitle>表單元件</SectionTitle>
-        <FormSection />
-      </section>
-
-      <section>
-        <SectionTitle>Do&apos;s &amp; Don&apos;ts</SectionTitle>
-        <DosDontsSection />
-      </section>
-
-      <footer className="border-t border-border/50 pt-6 text-sm text-muted-foreground">
-        設計規範定義在 <code className="font-mono bg-muted px-1.5 py-0.5 rounded">DESIGN.md</code>，更新樣式時請同步修改。
-      </footer>
-
     </div>
   );
 }
