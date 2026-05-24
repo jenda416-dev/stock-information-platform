@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
-import { Analytics } from "@vercel/analytics/react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <AppHeader />
         <main className="flex-1 pt-14">{children}</main>
-        <Analytics />
+        <GoogleAnalytics gaId="G-K8KPJR47R6" />
         <SpeedInsights />
       </body>
     </html>

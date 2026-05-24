@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { track } from "@vercel/analytics/react";
+import { sendGAEvent } from "@next/third-parties/google";
 import type { SectorResearchDoc, SectorResearchStock } from "@/lib/firebase/collections";
 import { SectorTagList } from "./SectorTagList";
 import { stripSectorSuffix } from "@/lib/utils";
@@ -33,7 +33,7 @@ export function SectorCard({ research, isLast, isOdd }: { research: SectorResear
         href={`/market-focus/${research.sectorId}`}
         className="absolute inset-0 z-[1] rounded-lg"
         aria-label={stripSectorSuffix(research.name)}
-        onClick={() => track("sector_open", { name: stripSectorSuffix(research.name) })}
+        onClick={() => sendGAEvent("event", "sector_open", { name: stripSectorSuffix(research.name) })}
       />
 
       {/* Header */}
