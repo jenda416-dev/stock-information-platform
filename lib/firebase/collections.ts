@@ -46,3 +46,27 @@ export interface WatchedStockDoc {
   createdAt: Timestamp;
 }
 
+export interface SectorResearchStock {
+  code: string;
+  name: string;
+  market: string;
+  benefit: "最高" | "高" | "中" | "低";
+  stars: number;
+  points: string[];
+}
+
+export interface SectorResearchCategory {
+  tier: string;
+  name: string;
+  description: string;
+  stocks: SectorResearchStock[];
+}
+
+export interface SectorResearchDoc {
+  sectorId: number;
+  name: string;
+  overview: string;
+  updated: string;
+  categories: SectorResearchCategory[];
+}
+

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/kol", label: "KOL 影片筆記" },
   { href: "/calculator", label: "存股計算機" },
+  { href: "/market-focus", label: "產業板塊" },
 ];
 
 export function NavMenu() {
