@@ -42,6 +42,7 @@ Dark Mode:
 | 頁面標題 | `text-lg sm:text-xl font-bold leading-snug` |
 | Section 標題 | `text-base font-semibold` |
 | 卡片子標題 | `text-[15px] font-bold leading-snug` |
+| 卡片內子標題 | `text-sm font-medium text-foreground` |
 | 內文 | `text-[15px] leading-[1.8] text-foreground/80` |
 | 次要內文 | `text-sm leading-relaxed text-foreground/80` |
 | 標籤 / 時間戳 | `text-xs text-muted-foreground` |
@@ -282,6 +283,20 @@ disabled:bg-muted disabled:text-muted-foreground disabled:border-border/50 disab
 
 `text-sm font-medium`，加 `htmlFor` 對應 input `id`（可及性）。錯誤訊息放 input 下方，用 `text-xs text-destructive`。
 
+### Input Card 變體
+
+用於數字輸入需要「卡片感」而非「表單感」的情境（例如計算機的年齡欄位）。無 border、背景用 `bg-muted`，視覺上像可點擊的灰色方塊。
+
+```
+h-[42px] w-20 bg-muted border-0 rounded-lg
+text-[15px] font-bold text-center text-foreground tabular-nums
+focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50
+transition-shadow duration-150
+[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+```
+
+> 與標準 Input（`border border-input bg-background`）的差異：Input Card 去除 border、改用 `bg-muted`，適合嵌入計算結果區或視覺上需要與 input group 卡片形成對比的場景。
+
 ---
 
 ## Loading / Empty 狀態
@@ -344,6 +359,21 @@ rounded-full border px-3 py-1 text-xs transition-colors
 
 ---
 
+## 結果強調卡片（Amber Variant）
+
+用於頁面上最重要的單一計算輸出（例如退休後每月可領金額）。與 Primary-tinted 卡片並列使用時，Amber 卡片放最上方，視覺優先級最高。
+
+```
+rounded-lg border border-amber-200 dark:border-amber-800/30
+bg-amber-50 dark:bg-amber-950/15 p-4
+```
+
+文字色：`text-amber-900 dark:text-amber-400`（標籤與數值統一使用）
+
+> 只用於「使用者最想知道的那個數字」，一頁最多一張。一般結果展示用 Primary-tinted 卡片。
+
+---
+
 ## 大數字展示
 
 用於計算結果的核心數值，字體層級額外補充：
@@ -382,6 +412,48 @@ text-4xl font-bold tabular-nums text-primary
 - tooltip 本體加 `pointer-events-none` 避免遮擋互動
 - 內容字色 `text-background`（在深色 tooltip 上維持對比）
 
+### Hint text vs Tooltip 選用原則
+
+| | Hint text | Tooltip |
+|--|-----------|---------|
+| 顯示方式 | input 下方常駐 | hover 才顯示 |
+| 適用情境 | 用戶在操作前必須知道的限制或建議（例如「最低投資金額為 1,000 元」） | 補充細節、用戶可選擇性閱讀 |
+| Class | `text-xs text-muted-foreground` | 見 Tooltip 規範 |
+
+---
+
+## 資料視覺化（Chart）
+
+### 區塊填色規範
+
+| 語意 | Light | Dark |
+|------|-------|------|
+| 儲蓄 / 本金 | `fill-sky-200` | `fill-sky-400/25` |
+| 投資收益 | `fill-amber-50 stroke-amber-200 strokeWidth="0.5"` | `fill-amber-700/20 stroke-amber-600/40` |
+
+### SVG Hover Tooltip
+
+互動式圖表上的 crosshair + 資訊卡，游標移入顯示、離開消失。
+
+```tsx
+// crosshair 線
+<line strokeWidth="0.5" strokeDasharray="2 2" className="stroke-foreground/30" />
+// 資料點圓點
+<circle r="2.5" className="fill-primary" />
+// tooltip 背景
+<rect rx="4" className="fill-foreground/85" />
+// 標題（年齡）
+<text fontSize="9" fontWeight="600" className="fill-background" />
+// 細項（左標籤、右數值）
+<text fontSize="7.5" className="fill-background/65" />   // label
+<text fontSize="7.5" fontWeight="500" className="fill-background" textAnchor="end" />  // value
+```
+
+**規則：**
+- SVG 加 `className="cursor-crosshair"`
+- tooltip 位置：游標在右半邊則靠左顯示，反之靠右，確保不超出邊界
+- 使用 `onMouseMove` / `onMouseLeave` 控制狀態，不用 CSS `:hover`
+
 ---
 
 ## 表單 Input Padding 變體
@@ -392,6 +464,45 @@ text-4xl font-bold tabular-nums text-primary
 | 計算機 / 需要大點擊面積 | `py-2.5` | 數字鍵盤易操作 |
 
 兩者 `px-3` 一致，可依情境選擇，同一頁面內統一即可。
+
+---
+
+## AgeTimeline 多段連接輸入
+
+用於呈現多個數值之間的連續關係（例如退休規劃的「目前年齡 → 退休年齡 → 預估壽命」），三個 Input Card 橫排，中間用帶方向箭頭的連接器說明各段年數。
+
+### 版面結構
+
+```
+[label]   [累積 N 年 + 箭頭]   [label]   [提領 N 年 + 箭頭]   [label]
+[input]   [←——flex-1——→]      [input]   [←——flex-1——→]      [input]
+```
+
+外層 `flex items-center`；input 欄用 `shrink-0 flex flex-col items-center gap-2`；連接器用 `flex-1 flex flex-col items-center gap-1.5 px-3`。
+
+### 連接器（ArrowConnector）
+
+```tsx
+// 年數文字
+<span className="text-[13px] font-medium whitespace-nowrap">累積 {years} 年</span>
+
+// SVG 箭頭（preserveAspectRatio="none" 讓寬度自適應）
+<svg viewBox="0 0 100 10" preserveAspectRatio="none" className="w-full h-2.5">
+  <line x1="0" y1="5" x2="88" y2="5" stroke="currentColor" strokeWidth="2" />
+  <polygon points="86,1.5 100,5 86,8.5" fill="currentColor" />
+</svg>
+```
+
+### 色彩語意
+
+| 段落 | 文字 | 箭頭 |
+|------|------|------|
+| 累積期（存錢） | `text-primary` | `text-primary/35` |
+| 提領期（退休） | `text-amber-500 dark:text-amber-400` | `text-amber-300 dark:text-amber-500/50` |
+
+### 數值保護邏輯
+
+三個值之間維持最小間距（`MIN_GAP = 1`）。使用本地 raw string state 暫存輸入中的字串，`onBlur` / `Enter` 時才 commit 並 clamp 到有效範圍，避免中間過渡值觸發錯誤計算。
 
 ---
 

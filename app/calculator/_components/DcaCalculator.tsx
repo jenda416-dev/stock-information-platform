@@ -5,8 +5,7 @@ import { DcaChart } from "./DcaChart";
 import { ResultCard } from "./ResultCard";
 import { calcDcaFv, formatWanParts } from "@/lib/calculator";
 
-const inputBase =
-  "w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-shadow duration-150 disabled:bg-muted disabled:text-muted-foreground disabled:border-border/50 disabled:cursor-not-allowed";
+import { inputBase } from "./constants";
 
 const RATE_PRESETS = [
   { label: "悲觀", value: "8" },
@@ -28,7 +27,7 @@ function RateEditor({ annualRate, isEditing, onChange, onToggle }: {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-1.5">
-        <label className="block text-sm font-medium text-foreground">預估年化報酬率</label>
+        <label className="block text-sm font-medium text-foreground">每年平均報酬率</label>
         <div className="relative group flex items-center justify-center">
           <svg className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground cursor-help transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -207,19 +206,11 @@ export function DcaCalculator() {
 
           {/* Target & Rate Group */}
           <div className="rounded-xl border border-border/60 bg-card p-4 space-y-5">
-            <div className="space-y-3">
+            <div className="space-y-2">
               <p className="text-sm font-medium text-foreground">存股標的</p>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted px-3 py-2.5 cursor-not-allowed select-none">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-muted-foreground">元大台灣50</span>
-                    <span className="text-xs text-muted-foreground/60">0050</span>
-                  </div>
-                  <svg className="w-4 h-4 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <p className="text-xs text-muted-foreground">目前僅支援 0050</p>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">0050</span>
+                <span className="text-sm text-foreground">元大台灣50</span>
               </div>
             </div>
 
