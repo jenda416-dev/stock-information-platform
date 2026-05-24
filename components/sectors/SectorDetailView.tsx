@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { track } from "@vercel/analytics/react";
 import { stripSectorSuffix } from "@/lib/utils";
 import type {
   SectorResearchDoc,
@@ -66,7 +67,7 @@ function StockItem({ stock }: { stock: SectorResearchStock }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 hover:text-primary transition-colors"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => { e.stopPropagation(); track("stock_link_click", { code: stock.code, market: stock.market }); }}
                 >
                   {stock.market} {stock.code}
                   <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">

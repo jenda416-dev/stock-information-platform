@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DcaCalculator } from "./DcaCalculator";
 import { DividendCalculator } from "./DividendCalculator";
@@ -7,7 +8,7 @@ import { LifecycleCalculator } from "./LifecycleCalculator";
 
 export function CalculatorTabs() {
   return (
-    <Tabs defaultValue="dca">
+    <Tabs defaultValue="dca" onValueChange={(v) => track("calculator_tab", { tab: v })}>
       <TabsList className="w-full h-10 mb-5">
         <TabsTrigger value="dca">定期定額</TabsTrigger>
         <TabsTrigger value="dividend">每月可領</TabsTrigger>
