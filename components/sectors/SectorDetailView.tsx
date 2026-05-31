@@ -246,10 +246,10 @@ export function SectorDetailView({ research }: { research: SectorResearchDoc }) 
                     <button
                       key={cat.name}
                       onClick={() => setSelectedIdx(globalIdx)}
-                      className={`w-full text-left py-2 rounded-lg transition-colors leading-snug mb-0.5 text-sm ${
+                      className={`w-full text-left py-2 border-l-2 transition-colors leading-snug mb-0.5 text-sm pl-4 ${
                         isActive
-                          ? "pl-[10px] border-l-4 border-primary bg-primary/10 text-primary font-medium"
-                          : "pl-4 text-foreground/60 hover:text-foreground"
+                          ? "border-primary text-primary font-medium"
+                          : "border-transparent text-foreground/60 hover:text-foreground hover:border-border"
                       }`}
                     >
                       {cat.name}

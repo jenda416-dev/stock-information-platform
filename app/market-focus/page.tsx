@@ -11,7 +11,7 @@ export default function MarketFocusPage() {
     <div className="max-w-5xl mx-auto px-4 py-10">
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-1">
-          <span aria-hidden="true">🔍</span>
+          <div className="w-0.5 h-5 rounded-full bg-primary" aria-hidden="true" />
           <h1 className="text-lg sm:text-xl font-bold leading-snug">產業板塊</h1>
         </div>
         <p className="text-sm text-muted-foreground">

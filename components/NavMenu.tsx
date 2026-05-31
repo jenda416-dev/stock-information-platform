@@ -40,11 +40,11 @@ export function NavMenu() {
         aria-label="開啟選單"
       >
         {open ? (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         )}
@@ -52,7 +52,7 @@ export function NavMenu() {
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-sm z-50">
+        <div className="md:hidden absolute top-14 left-0 right-0 bg-background border-b shadow-sm z-20">
           {links.map((link) => (
             <Link
               key={link.href}

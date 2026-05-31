@@ -16,7 +16,7 @@ export function ReadingProgressBar() {
 
   return (
     <div
-      className="fixed top-0 left-0 z-50 h-[3px] bg-primary transition-[width] duration-100"
+      className="fixed top-0 left-0 z-30 h-[3px] bg-primary transition-[width] duration-100"
       style={{ width: `${progress}%` }}
       aria-hidden="true"
     />
