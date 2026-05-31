@@ -5,9 +5,13 @@ import { adminDb } from "@/lib/firebase/admin";
 import type { SectorResearchDoc } from "@/lib/firebase/collections";
 import { stripSectorSuffix } from "@/lib/utils";
 export async function generateStaticParams() {
-  const { adminDb } = await import("@/lib/firebase/admin");
-  const snap = await adminDb.collection("sectorResearch").get();
-  return snap.docs.map((doc) => ({ id: doc.id }));
+  try {
+    const { adminDb } = await import("@/lib/firebase/admin");
+    const snap = await adminDb.collection("sectorResearch").get();
+    return snap.docs.map((doc) => ({ id: doc.id }));
+  } catch {
+    return [];
+  }
 }
 
 export const revalidate = 3600;
