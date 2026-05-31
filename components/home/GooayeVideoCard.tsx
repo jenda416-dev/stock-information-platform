@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { sendGAEvent } from "@next/third-parties/google";
 
 export interface VideoSummary {
   videoId: string;
@@ -42,7 +45,7 @@ export function GooayeVideoCard({ video }: { video: VideoSummary }) {
   });
 
   return (
-    <Link href={`/kol/${video.videoId}`} className="block group cursor-pointer">
+    <Link href={`/kol/${video.videoId}`} className="block group cursor-pointer" onClick={() => sendGAEvent("event", "kol_card_click", { videoId: video.videoId, title: video.title })}>
       <Card className="gap-2 overflow-hidden transition-all duration-200 group-hover:shadow-md border-t-0 dark:bg-[oklch(0.20_0.02_264)]">
         <CardHeader className="pb-0 pt-0">
           <div className="flex items-start gap-3">

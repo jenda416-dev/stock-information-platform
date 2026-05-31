@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import type { KolPost } from "@/types/kol";
+import { sendGAEvent } from "@next/third-parties/google";
 
 const PREVIEW_LENGTH = 150;
 
@@ -38,7 +41,7 @@ export function KolPostCard({ post }: Props) {
   const previewText = cleanBody ? cleanBody.slice(0, 300) : null;
 
   return (
-    <Link href={`/kol/${post.guid}`} className="block group cursor-pointer">
+    <Link href={`/kol/${post.guid}`} className="block group cursor-pointer" onClick={() => sendGAEvent("event", "kol_card_click", { guid: post.guid, title: post.title ?? "" })}>
       <Card className="gap-2 overflow-hidden transition duration-200 group-hover:shadow-md border-t-0">
         <CardHeader className="pb-0 pt-0">
           <div className="flex items-start gap-3">

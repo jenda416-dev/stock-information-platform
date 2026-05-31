@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SectionCard } from "@/types/kol";
+import { sendGAEvent } from "@next/third-parties/google";
 
 function ChevronIcon({ open }: { open: boolean }) {
   return (
@@ -63,7 +64,7 @@ function SectionCardItem({ card }: { card: SectionCard }) {
                 }
                 const cls = "text-xs font-medium px-2.5 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/20 hover:bg-white/20 transition-colors";
                 return url ? (
-                  <a key={s} href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+                  <a key={s} href={url} target="_blank" rel="noopener noreferrer" className={cls} onClick={(e) => { e.stopPropagation(); sendGAEvent("event", "stock_link_click", { stock: s }); }}>
                     {s}
                   </a>
                 ) : (

@@ -8,6 +8,7 @@ import { ReadingProgressBar } from "@/components/kol/ReadingProgressBar";
 import { MarkdownContent } from "@/components/kol/MarkdownContent";
 import { PlainTextContent } from "@/components/kol/PlainTextContent";
 import { ConclusionCard } from "@/components/kol/ConclusionCard";
+import { ExternalLink } from "@/components/kol/ExternalLink";
 import { extractActionGuide } from "@/lib/extractActionGuide";
 
 interface Props {
@@ -105,17 +106,19 @@ export default async function VideoDetailPage({ params }: Props) {
               <span className="opacity-40">·</span>
               <span>{publishedDate}</span>
               <span className="opacity-40">·</span>
-              <a
+              <ExternalLink
                 href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-0.5 text-primary hover:underline py-2"
+                gaEvent="youtube_click"
+                gaParams={{ guid }}
               >
                 在 YouTube 觀看
                 <svg className="w-3 h-3 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
                 </svg>
-              </a>
+              </ExternalLink>
             </div>
           </div>
 
@@ -138,12 +141,12 @@ export default async function VideoDetailPage({ params }: Props) {
                   }
                   const cls = "inline-flex items-center gap-1 text-[13px] font-medium px-2.5 py-1 rounded-full bg-primary/8 text-primary border border-primary/20 hover:bg-primary/15 transition-colors";
                   return url ? (
-                    <a key={s} href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+                    <ExternalLink key={s} href={url} target="_blank" rel="noopener noreferrer" className={cls} gaEvent="stock_link_click" gaParams={{ stock: s }}>
                       {s}
                       <svg className="w-3 h-3 opacity-60 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" />
                       </svg>
-                    </a>
+                    </ExternalLink>
                   ) : (
                     <span key={s} className={cls}>{s}</span>
                   );
