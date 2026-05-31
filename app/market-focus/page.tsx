@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { MarketFocusView } from "@/components/sectors/MarketFocusView";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "產業板塊 | 股市資訊平台",
   description: "查看市場漲跌幅最大的概念股和族群有哪些",
